@@ -24,7 +24,6 @@ class NotesActivity : AppCompatActivity() {
         binding = ActivityNotesBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-
         val viewModel: NotesViewModel by viewModels()
         notesAdapter = NotesAdapter(arrayListOf())
 
@@ -54,5 +53,12 @@ class NotesActivity : AppCompatActivity() {
 
     }
 
+
+    // Refresh notes list when returning to app
+    override fun onResume() {
+        super.onResume()
+        val viewModel: NotesViewModel by viewModels()
+        viewModel.loadNotes()
+    }
 
 }

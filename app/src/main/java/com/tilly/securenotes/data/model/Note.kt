@@ -1,13 +1,10 @@
 package com.tilly.securenotes.data.model
 
+import com.google.type.DateTime
 import java.util.*
 
-class Note(
-    var noteId: String,
-    var userId: String,
+data class Note( var noteId: String,
     var title: String,
     var content: String,
     var lastEdited: Date
-) {
-
-}
+)
