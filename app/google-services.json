@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "540502900098",
+    "project_id": "notes-7d590",
+    "storage_bucket": "notes-7d590.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:540502900098:android:47de49cdf97234ca08239b",
+        "android_client_info": {
+          "package_name": "com.tilly.securenotes"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "540502900098-7fgfiosm6r726gjdgl2b31vmlfnv81kr.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCffjXOj4YbRcqQPos5S45tzEcZi39si5k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "540502900098-7fgfiosm6r726gjdgl2b31vmlfnv81kr.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
