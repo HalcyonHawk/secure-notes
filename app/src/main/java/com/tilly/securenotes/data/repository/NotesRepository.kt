@@ -1,11 +1,13 @@
 package com.tilly.securenotes.data.repository
 
 import android.util.Log
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import com.tilly.securenotes.data.model.ResultStatusWrapper
 import com.tilly.securenotes.data.model.Note
 import kotlin.collections.ArrayList
 
@@ -21,12 +23,10 @@ object NotesRepository {
         return auth.uid!!
     }
 
-    class FirebaseResponse<T>(val result: T){
 
-    }
-
-    // Load notes for current user and post arraylist of newly created note objects to livedata from viewmodel
-    fun loadNotes(noteListLiveData: MutableLiveData<ArrayList<Note>>){
+    // Load notes for current user and pass async task to viewmodel
+    fun loadNotes(): LiveData<ResultStatusWrapper<ArrayList<Note>>> {
+        val liveDataWrapper: MutableLiveData<ResultStatusWrapper<ArrayList<Note>>> = MutableLiveData()
         firestore.collection(NOTES_COLLECTION)
             .whereEqualTo("user_id", auth.currentUser!!.uid)
             .get()
@@ -38,30 +38,33 @@ object NotesRepository {
                         content = document.getString("content")!!,
                         lastEdited = document.getDate("last_edited_date")!!))
                 }
-                noteListLiveData.postValue(noteList)
+                // Post successful response with note list
+                liveDataWrapper.postValue(ResultStatusWrapper.Success(noteList))
             }
-            .addOnFailureListener{
-                Log.e("firebase", "Error getting documents", it)
+            .addOnFailureListener{ exception ->
+                liveDataWrapper.postValue(ResultStatusWrapper.Error(null, exception))
             }
+        return liveDataWrapper
     }
 
-    // Submit note to firebase
-    fun createNoteOnFirebase(newNote: Note){
+    // Submit note to firebase and update current note id returns id for new note
+    fun createNoteOnFirebase(newNote: Note): String{
         val noteHashMap = hashMapOf("user_id" to getUserId(),
             "title" to newNote.title,
             "content" to newNote.content,
             "last_edited_date" to newNote.lastEdited)
-
+        var newId: String = ""
         firestore.collection(NOTES_COLLECTION)
             .add(noteHashMap)
             .addOnFailureListener{
                 Log.e("firebase", "Error creating document", it)
             }
+        return newId
     }
 
     // Edit existing note on firebase by note document ID
     fun editNoteOnFirebase(newNote: Note){
-        val noteHashMap = hashMapOf(
+        val noteHashMap = hashMapOf("user_id" to getUserId(),
             "title" to newNote.title,
             "content" to newNote.content,
             "last_edited_date" to newNote.lastEdited)

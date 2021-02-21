@@ -49,6 +49,7 @@ class NotesAdapter(val noteList: ArrayList<Note>) : RecyclerView.Adapter<NotesAd
     }
 
     fun updateNotes(newList: ArrayList<Note>){
+        // TODO: dont clear, add notes already there
         noteList.clear()
         noteList.addAll(newList)
 

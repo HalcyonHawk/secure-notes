@@ -1,21 +1,20 @@
 package com.tilly.securenotes.ui.editor
 
 import android.app.Activity
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.core.widget.addTextChangedListener
 import androidx.core.widget.doOnTextChanged
+import androidx.lifecycle.Observer
 import com.tilly.securenotes.R
-import com.tilly.securenotes.data.model.Note
 import com.tilly.securenotes.databinding.ActivityEditorBinding
-import com.tilly.securenotes.ui.notes.NotesUtility
 import java.util.*
 
 class EditorActivity : AppCompatActivity() {
@@ -39,14 +38,30 @@ class EditorActivity : AppCompatActivity() {
         viewModel.initViewModel(passedNote, resources.configuration.locales[0], TimeZone.getDefault())
 
         // Initializing text views with title, content and date from current note in viewmodel
-        binding.contentTextInput.setText(viewModel.currentNote.content)
-        binding.titleEditText.setText(viewModel.currentNote.title)
+        binding.contentTextInput.setText(viewModel.noteContent)
+        binding.titleEditText.setText(viewModel.noteTitle)
         binding.dateEdited.text = viewModel.getThisNoteTimeString()
 
-        binding.titleEditText.addTextChangedListener{ text ->
-            viewModel.
-
+        //TODO: Periodically update text on server as typing
+        binding.titleEditText.doOnTextChanged { text, start, before, count ->
+            viewModel.updateNoteTitle(text.toString())
         }
+        binding.contentTextInput.doOnTextChanged { text, start, before, count ->
+            viewModel.updateNoteContent(text.toString())
+        }
+
+    }
+
+    override fun onResume() {
+        super.onResume()
+        val viewModel: EditorViewModel by viewModels()
+
+        // If new note then automatically focus title field
+        if (viewModel.isNoteNew){
+            initFocusTitleField()
+            viewModel.setTextEditHasFocus(true)
+        }
+
     }
 
     // Hide keyboard and unfocus edittext view
@@ -60,6 +75,13 @@ class EditorActivity : AppCompatActivity() {
 
         inputMethodManager.hideSoftInputFromWindow(focusedView.windowToken, 0)
         focusedView.clearFocus()
+    }
+
+    private fun initFocusTitleField(){
+        binding.titleEditText.requestFocusFromTouch()
+        val inputMethodManager = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+        inputMethodManager.showSoftInput(binding.titleEditText, InputMethodManager.SHOW_IMPLICIT)
+
     }
 
     // Setting actions for toolbar buttons
@@ -81,14 +103,25 @@ class EditorActivity : AppCompatActivity() {
                 true
             }
             R.id.submit -> {
-                // Hide keyboard, unfocus edittext view and submit current note to firebase
-                stopEditingText()
-                viewModel.saveNote()
+                // If title field is empty then show error message and focus title field
+                if (binding.titleEditText.text.isNullOrBlank()){
+                    Toast.makeText(this, "Please enter a title", Toast.LENGTH_SHORT).show()
+                    binding.titleEditText.requestFocusFromTouch()
+                } else {
+                    // Hide keyboard, unfocus edittext view and submit current note to firebase
+                    stopEditingText()
+                    viewModel.saveNote()
+                }
                 true
             }
             android.R.id.home -> {
-                // Pressing back arrow button on toolbar calls same function as navigation back button
-                onBackPressed()
+                // Pressing back arrow button on toolbar finishes activity
+                stopEditingText()
+                viewModel.saveNote()
+                // TODO: Commit note onCreate then compare euality, if diff then noteactivity needs to update
+                val returnIntent = Intent()
+                setResult(Activity.RESULT_CANCELED, returnIntent)
+                finish()
                 true
             }
             else -> return super.onOptionsItemSelected(item)
@@ -97,29 +130,36 @@ class EditorActivity : AppCompatActivity() {
     }
 
 
-
     // Initialising toolbar buttons
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.editor_menu, menu)
+        val viewModel: EditorViewModel by viewModels()
+
         val shareMenuItem = menu?.findItem(R.id.share)
         val deleteMenuItem = menu?.findItem(R.id.delete)
         val submitMenuItem = menu?.findItem(R.id.submit)
 
+        // Lambda to update fo
+        val updateVisibleToolbarButtons = { hasFocus: Boolean ->
+            submitMenuItem?.isVisible = hasFocus
+            deleteMenuItem?.isVisible = !hasFocus
+            shareMenuItem?.isVisible = !hasFocus
+
+        }
+
+        viewModel.isTextInputFocused.observe(this, Observer { isFocused ->
+            updateVisibleToolbarButtons(isFocused)
+        })
+
+        val editTextFocusListener = {view: View?, hasFocus: Boolean ->
+            viewModel.setTextEditHasFocus(hasFocus)
+        }
 
         // Changing toolbar button visibility if focused
-        binding.contentTextInput.setOnFocusChangeListener { v, hasFocus ->
-            if (hasFocus){
-                submitMenuItem?.isVisible = true
+        binding.titleEditText.setOnFocusChangeListener(editTextFocusListener)
+        binding.contentTextInput.setOnFocusChangeListener(editTextFocusListener)
 
-                deleteMenuItem?.isVisible = false
-                shareMenuItem?.isVisible = false
-            } else {
-                submitMenuItem?.isVisible = false
 
-                deleteMenuItem?.isVisible = true
-                shareMenuItem?.isVisible = true
-            }
-        }
 
         return super.onCreateOptionsMenu(menu)
     }

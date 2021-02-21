@@ -1,9 +1,13 @@
 package com.tilly.securenotes.ui.notes
 
+
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.Observer
 import com.google.gson.Gson
 import com.tilly.securenotes.data.model.Note
 import java.text.SimpleDateFormat
 import java.util.*
+
 
 // Notes utility functions
 object NotesUtility {
@@ -30,5 +34,14 @@ object NotesUtility {
         val formatter = SimpleDateFormat("h:mm a dd MMMM yyyy", locale)
         formatter.timeZone = timeZone
         return formatter.format(date)
+    }
+    // Extension function to observe live data then remove observer after executing onChanged once
+    fun <T> LiveData<T>.observeOnce(observer: Observer<T>) {
+        observeForever(object : Observer<T> {
+            override fun onChanged(t: T?) {
+                observer.onChanged(t)
+                removeObserver(this)
+            }
+        })
     }
 }
