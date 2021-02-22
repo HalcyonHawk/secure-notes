@@ -2,13 +2,18 @@ package com.tilly.securenotes.ui.profile
 
 import android.app.Activity
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
+import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import com.kroegerama.imgpicker.BottomSheetImagePicker
+import com.kroegerama.imgpicker.ButtonType
 import com.squareup.picasso.Picasso
 import com.tilly.securenotes.R
 import com.tilly.securenotes.data.model.EditorToolbarActivity
@@ -16,7 +21,7 @@ import com.tilly.securenotes.data.model.User
 import com.tilly.securenotes.databinding.ActivityProfileBinding
 import com.tilly.securenotes.ui.login.LoginActivity
 
-class ProfileActivity : EditorToolbarActivity() {
+class ProfileActivity : EditorToolbarActivity(), BottomSheetImagePicker.OnImagesSelectedListener {
     lateinit var binding: ActivityProfileBinding
     lateinit var viewModel: ProfileViewModel
     val doge = "https://www.telegraph.co.uk/content/dam/technology/2021/01/28/Screenshot-2021-01-28-at-13-20-35_trans_NvBQzQNjv4BqgorLzNIuWKFjctv8STCiZsyL_iAq5T7dsR69ZpavGbo.png?imwidth=960"
@@ -45,9 +50,14 @@ class ProfileActivity : EditorToolbarActivity() {
         })
 
         binding.profileImage.setOnClickListener {
-            val changePicIntent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
-            startActivityForResult(changePicIntent, 0)
-
+            BottomSheetImagePicker.Builder(getString(R.string.file_provider))
+                .cameraButton(ButtonType.Tile)
+                .galleryButton(ButtonType.Button)
+                .singleSelectTitle(R.string.select_new_image)
+                .peekHeight(R.dimen.peekHeight)
+                .columnSize(R.dimen.columnSize)
+                .requestTag("single")
+                .show(supportFragmentManager)
         }
     }
 
@@ -94,9 +104,19 @@ class ProfileActivity : EditorToolbarActivity() {
         return super.onCreateOptionsMenu(menu)
     }
 
-
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when(item.itemId){
+            R.id.submit_profile -> {}
+            R.id.delete_account -> {}
+            R.id.logout -> { viewModel.logout()}
 
+        }
         return super.onOptionsItemSelected(item)
+    }
+
+    override fun onImagesSelected(uris: List<Uri>, tag: String?) {
+        uris.forEach { uri ->
+            Picasso.get().load(uri).into(binding.profileImage)
+        }
     }
 }
