@@ -8,17 +8,18 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.inputmethod.InputMethodManager
+import android.widget.EditText
 import android.widget.Toast
-import androidx.activity.viewModels
-import androidx.core.widget.addTextChangedListener
 import androidx.core.widget.doOnTextChanged
-import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import com.tilly.securenotes.R
+import com.tilly.securenotes.data.model.EditorToolbarActivity
 import com.tilly.securenotes.databinding.ActivityEditorBinding
 import java.util.*
 
-class EditorActivity : AppCompatActivity() {
+class EditorActivity : EditorToolbarActivity() {
     private lateinit var binding: ActivityEditorBinding
+    private lateinit var viewModel: EditorViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,8 +31,9 @@ class EditorActivity : AppCompatActivity() {
         supportActionBar?.setDisplayShowTitleEnabled(false)
         supportActionBar?.setDisplayShowHomeEnabled(true)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        // Creating class level viewModel
+        viewModel = ViewModelProvider(this).get(EditorViewModel::class.java)
 
-        val viewModel: EditorViewModel by viewModels()
 
         // Getting note JSON from intent
         val passedNote = intent.extras?.getString("note")
@@ -52,42 +54,23 @@ class EditorActivity : AppCompatActivity() {
 
     }
 
+
+    // After views have been initialized, if the note is new then focus title field and show keyboard
     override fun onResume() {
         super.onResume()
-        val viewModel: EditorViewModel by viewModels()
 
         // If new note then automatically focus title field
         if (viewModel.isNoteNew){
-            initFocusTitleField()
-            viewModel.setTextEditHasFocus(true)
+            startEditingTextField(binding.titleEditText)
         }
 
-    }
 
-    // Hide keyboard and unfocus edittext view
-    private fun stopEditingText(){
-        val inputMethodManager = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
-        var focusedView = currentFocus
-
-        if (focusedView == null){
-            focusedView = View(this)
-        }
-
-        inputMethodManager.hideSoftInputFromWindow(focusedView.windowToken, 0)
-        focusedView.clearFocus()
-    }
-
-    private fun initFocusTitleField(){
-        binding.titleEditText.requestFocusFromTouch()
-        val inputMethodManager = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
-        inputMethodManager.showSoftInput(binding.titleEditText, InputMethodManager.SHOW_IMPLICIT)
 
     }
 
     // Setting actions for toolbar buttons
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         // Getting viewModel instance
-        val viewModel: EditorViewModel by viewModels()
 
         return when(item.itemId){
             R.id.share -> {
@@ -130,36 +113,20 @@ class EditorActivity : AppCompatActivity() {
     }
 
 
-    // Initialising toolbar buttons
+
+    // Initialising toolbar buttons and observing if an edit text view is focused to change toolbar button visibility
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.editor_menu, menu)
-        val viewModel: EditorViewModel by viewModels()
 
         val shareMenuItem = menu?.findItem(R.id.share)
         val deleteMenuItem = menu?.findItem(R.id.delete)
         val submitMenuItem = menu?.findItem(R.id.submit)
 
-        // Lambda to update fo
-        val updateVisibleToolbarButtons = { hasFocus: Boolean ->
-            submitMenuItem?.isVisible = hasFocus
-            deleteMenuItem?.isVisible = !hasFocus
-            shareMenuItem?.isVisible = !hasFocus
-
-        }
-
-        viewModel.isTextInputFocused.observe(this, Observer { isFocused ->
-            updateVisibleToolbarButtons(isFocused)
-        })
-
-        val editTextFocusListener = {view: View?, hasFocus: Boolean ->
-            viewModel.setTextEditHasFocus(hasFocus)
-        }
+        val editTextFocusListener = getUpdateToolbarIfEditingListener(shareMenuItem, deleteMenuItem, submitMenuItem)
 
         // Changing toolbar button visibility if focused
-        binding.titleEditText.setOnFocusChangeListener(editTextFocusListener)
-        binding.contentTextInput.setOnFocusChangeListener(editTextFocusListener)
-
-
+        binding.titleEditText.onFocusChangeListener = editTextFocusListener
+        binding.contentTextInput.onFocusChangeListener = editTextFocusListener
 
         return super.onCreateOptionsMenu(menu)
     }

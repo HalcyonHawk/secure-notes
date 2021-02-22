@@ -9,22 +9,53 @@ import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.tilly.securenotes.data.model.ResultStatusWrapper
 import com.tilly.securenotes.data.model.Note
+import com.tilly.securenotes.data.model.User
+import java.io.FileNotFoundException
 import kotlin.collections.ArrayList
 
-object NotesRepository {
+object NoteRepository {
     private val firestore = Firebase.firestore
     private val auth = Firebase.auth
 
     // Notes collection name constant
     private const val NOTES_COLLECTION = "notes"
+    private const val USERS_COLLECTION = "users"
 
     // Get current user ID
     private fun getUserId(): String{
         return auth.uid!!
     }
 
+    fun getCurrentUser(): LiveData<ResultStatusWrapper<User>>{
+        val userLiveData: MutableLiveData<ResultStatusWrapper<User>> = MutableLiveData()
+
+        firestore.collection(USERS_COLLECTION)
+            .whereEqualTo("external_id", getUserId())
+            .get()
+            .addOnSuccessListener { queryResult ->
+                val documents = queryResult.documents
+                // Check if user document with ID from current firebase auth user is found
+                if (documents.isNotEmpty()){
+                    val doc = documents.first()
+                    val user = User(email = doc.getString("email")!!,
+                        name = doc.getString("external_id")!!,
+                        avatar = doc.getString("avatar")!!)
+                    userLiveData.postValue(ResultStatusWrapper.Success(user))
+                } else {
+                    // If user not found, return error in result wrapper
+                    userLiveData.postValue(ResultStatusWrapper.Error(null,
+                        exception = NoSuchElementException("User not found")))
+                }
+            }
+            .addOnFailureListener { exception ->
+                userLiveData.postValue(ResultStatusWrapper.Error(null, exception))
+            }
+
+        return userLiveData
+    }
 
     // Load notes for current user and pass async task to viewmodel
+    //TODO: Change to new ResultStatusWrapper
     fun loadNotes(): LiveData<ResultStatusWrapper<ArrayList<Note>>> {
         val liveDataWrapper: MutableLiveData<ResultStatusWrapper<ArrayList<Note>>> = MutableLiveData()
         firestore.collection(NOTES_COLLECTION)

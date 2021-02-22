@@ -3,7 +3,7 @@ package com.tilly.securenotes.ui.notes
 import androidx.lifecycle.*
 import com.tilly.securenotes.data.model.ResultStatusWrapper
 import com.tilly.securenotes.data.model.Note
-import com.tilly.securenotes.data.repository.NotesRepository
+import com.tilly.securenotes.data.repository.NoteRepository
 import com.tilly.securenotes.ui.notes.NotesUtility.observeOnce
 import kotlin.collections.ArrayList
 
@@ -22,7 +22,7 @@ class NotesViewModel: ViewModel() {
         // Loading notes
         // Using observeOnce extension function defined in NotesUtils to automatically remove observer after Observer.onChanged executed
         // NOTE: using observeForever not observe in observeOnce function
-        NotesRepository.loadNotes().observeOnce(Observer { response ->
+        NoteRepository.loadNotes().observeOnce(Observer { response ->
             when(response){
                 // If response from firebase successful then post newly loaded note list into _notesList
                 is ResultStatusWrapper.Success -> {

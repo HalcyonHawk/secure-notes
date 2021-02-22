@@ -14,4 +14,7 @@
     <string name="login_failed">"Login failed"</string>
     <string name="create_an_account">Create an Account</string>
     <string name="open_note">Open note</string>
+    <string name="profile_picture">Profile picture</string>
+    <string name="update_password">Update Password</string>
+    <string name="change_password">Change Password</string>
 </resources>

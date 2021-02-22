@@ -1,5 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <color name="primaryColor">#00bcd4</color>
+    <color name="primaryColorVariation">#0097A7</color>
+    <color name="primaryLightColor">#62efff</color>
+    <color name="primaryDarkColor">#008ba3</color>
+    <color name="primaryTextColor">#000000</color>
+
+    <color name="red_a700">#D50000</color>
+    <color name="cyan_500">#00bcd4</color>
+
     <color name="purple_200">#FFBB86FC</color>
     <color name="purple_500">#FF6200EE</color>
     <color name="purple_700">#FF3700B3</color>

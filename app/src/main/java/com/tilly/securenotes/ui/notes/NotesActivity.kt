@@ -10,6 +10,7 @@ import androidx.activity.result.contract.ActivityResultContracts.StartActivityFo
 import androidx.activity.viewModels
 import androidx.appcompat.app.ActionBar
 import androidx.lifecycle.Observer
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.tilly.securenotes.R
 import com.tilly.securenotes.data.model.Note
@@ -17,6 +18,7 @@ import com.tilly.securenotes.data.model.ResultStatusWrapper
 import com.tilly.securenotes.databinding.ActivityNotesBinding
 import com.tilly.securenotes.ui.editor.EditorActivity
 import com.tilly.securenotes.ui.notes.NotesUtility.observeOnce
+import com.tilly.securenotes.ui.profile.ProfileActivity
 
 class NotesActivity : AppCompatActivity() {
 
@@ -37,24 +39,28 @@ class NotesActivity : AppCompatActivity() {
         binding.notesList.adapter = notesAdapter
         binding.notesList.layoutManager = LinearLayoutManager(this)
 
+        // TODO: Finish swipe list item menu
+        val swipeController = SwipeController()
+        val itemTouchHelper = ItemTouchHelper(swipeController)
+        itemTouchHelper.attachToRecyclerView(binding.notesList)
+
         viewModel.notesList.observe(this, Observer { notes ->
             notesAdapter.updateNotes(notes)
         })
 
-        viewModel.loadNotes()
-
+        refreshNotesList()
 
         binding.topAppBar.setOnMenuItemClickListener { menuItem ->
             when(menuItem.itemId){
                 R.id.new_note -> {
                     // Start activity for result
                     val intent = Intent(this, EditorActivity::class.java)
-                    startActivityForResult(intent, 1)
+                    startActivity(intent)
 
                     true
                 }
                 R.id.profile -> {
-
+                    startActivity(Intent(this, ProfileActivity::class.java))
                     true
                 }
                 else -> false
@@ -65,7 +71,7 @@ class NotesActivity : AppCompatActivity() {
     fun refreshNotesList(){
         val viewModel: NotesViewModel by viewModels()
 
-        viewModel.loadNotes().observeOnce(Observer { resultStatusWrapper ->
+        viewModel.loadNotes().observe(this, Observer { resultStatusWrapper ->
             when (resultStatusWrapper) {
                 is ResultStatusWrapper.Success -> {
                     Toast.makeText(
@@ -81,16 +87,10 @@ class NotesActivity : AppCompatActivity() {
                 }
             }
         })
-
-    }
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-
-        refreshNotesList()
-
     }
 
-                    // Refresh notes list when returning to app
+
+    // Refresh notes list when returning to app from another app or activity
     override fun onResume() {
         super.onResume()
         val viewModel: NotesViewModel by viewModels()

@@ -3,4 +3,5 @@
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
     <dimen name="title_text">20sp</dimen>
+    <dimen name="swipe_menu_btn_width">64dp</dimen>
 </resources>

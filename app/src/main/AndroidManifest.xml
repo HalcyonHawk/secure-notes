@@ -2,6 +2,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.tilly.securenotes">
 
+<!-- Get required permissions to access internet, camera and write to storage   -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" />
+    <uses-feature android:name="android.hardware.camera.autofocus" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -9,8 +16,10 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.SecureNotes">
-        <activity android:name=".ui.editor.EditorActivity"
-            android:windowSoftInputMode="stateHidden|adjustResize"/>
+        <activity android:name=".ui.profile.ProfileActivity"></activity>
+        <activity
+            android:name=".ui.editor.EditorActivity"
+            android:windowSoftInputMode="stateHidden|adjustResize" />
         <activity android:name=".ui.register.RegisterActivity" />
         <activity
             android:name=".ui.login.LoginActivity"

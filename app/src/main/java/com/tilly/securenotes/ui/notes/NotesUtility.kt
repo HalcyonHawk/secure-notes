@@ -35,6 +35,7 @@ object NotesUtility {
         formatter.timeZone = timeZone
         return formatter.format(date)
     }
+
     // Extension function to observe live data then remove observer after executing onChanged once
     fun <T> LiveData<T>.observeOnce(observer: Observer<T>) {
         observeForever(object : Observer<T> {

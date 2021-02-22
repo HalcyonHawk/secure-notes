@@ -9,10 +9,13 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 
-object LoginRepository {
+object AuthRepository {
     private var auth: FirebaseAuth = Firebase.auth
     private var firestore = Firebase.firestore
 
+    fun getFirebaseAuth(): FirebaseAuth{
+        return auth
+    }
 
     fun loginWithEmail(email: String, password: String): Task<AuthResult> {
         return auth.signInWithEmailAndPassword(email, password)

@@ -5,14 +5,11 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.android.gms.tasks.Task
 import com.tilly.securenotes.data.model.Note
-import com.tilly.securenotes.data.repository.NotesRepository
+import com.tilly.securenotes.data.repository.NoteRepository
 import com.tilly.securenotes.ui.notes.NotesUtility
 import java.util.*
 
 class EditorViewModel: ViewModel() {
-    // Is the note being edited
-    // TODO: Update name to isNew
-
     // Declare timezone and locale for formatting date and time
     private lateinit var locale: Locale
 
@@ -23,16 +20,13 @@ class EditorViewModel: ViewModel() {
         "",
         Calendar.getInstance().time)
 
-    // LiveData to if any text input view is focused and alert view to appropriately update the view
-    private val _isTextInputFocused: MutableLiveData<Boolean> = MutableLiveData()
-    val isTextInputFocused: LiveData<Boolean>
-        get() = _isTextInputFocused
+
 
     // Getters to only expose required Note object properties
     // TODO use getters and setters?
     val noteTitle get() = currentNote.title
     val noteContent get() = currentNote.content
-    val isNoteNew get() = currentNote.noteId.isNotBlank()
+    val isNoteNew get() = currentNote.noteId.isBlank()
 
     val updateNoteTitle = { title: String ->
         // TODO: Sbmit to db periodially?
@@ -60,26 +54,25 @@ class EditorViewModel: ViewModel() {
         this.timeZone = timeZone
     }
 
-    // Setter to post new edit text state to observers
-    fun setTextEditHasFocus(isEditing: Boolean){
-        _isTextInputFocused.postValue(isEditing)
-    }
 
     fun updateEditedNote(){
 
     }
 
     // Function for checking if notes have been edited or are the same
+    // TODO: Update note when typing?
     fun haveNotesBeenEdited(oldNote: Note, newNote: Note): Boolean{
+        TODO("not implemented")
         return oldNote != newNote
     }
 
     // If isEditing note then edit existing document on firebase by ID else create new document
     fun saveNote() {
-        if (currentNote.noteId.isNotBlank()){
-            NotesRepository.editNoteOnFirebase(currentNote)
+
+        if (!isNoteNew){
+            NoteRepository.editNoteOnFirebase(currentNote)
         } else {
-            currentNote.noteId = NotesRepository.createNoteOnFirebase(currentNote)
+            currentNote.noteId = NoteRepository.createNoteOnFirebase(currentNote)
 
         }
     }
@@ -90,7 +83,7 @@ class EditorViewModel: ViewModel() {
     }
 
     private fun deleteNoteById(id: String): Task<Void>{
-        return NotesRepository.deleteNote(id)
+        return NoteRepository.deleteNote(id)
     }
 
     fun saveNoteToLocalDb(note: Note){
