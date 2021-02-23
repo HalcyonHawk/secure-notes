@@ -3,6 +3,7 @@ package com.tilly.securenotes.ui.login
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.View
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.lifecycle.ViewModelProvider
@@ -22,9 +23,13 @@ class LoginActivity : AppCompatActivity() {
         val viewModel: LoginViewModel by viewModels()
 
 
+        // Start login and show loadingbar
         binding.login.setOnClickListener {
+            binding.loading.visibility = View.VISIBLE
             viewModel.loginWithEmail(binding.username.text.toString(), binding.password.text.toString())
                 .addOnCompleteListener{ task ->
+                    binding.loading.visibility = View.GONE
+
                     if (task.isSuccessful){
                         val intent = Intent(this, NotesActivity::class.java)
                         startActivity(intent)

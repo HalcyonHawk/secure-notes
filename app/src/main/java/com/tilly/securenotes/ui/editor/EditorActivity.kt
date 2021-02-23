@@ -2,22 +2,22 @@ package com.tilly.securenotes.ui.editor
 
 import android.app.Activity
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View
-import android.view.inputmethod.InputMethodManager
-import android.widget.EditText
 import android.widget.Toast
-import androidx.core.widget.doOnTextChanged
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.widget.doAfterTextChanged
 import androidx.lifecycle.ViewModelProvider
 import com.tilly.securenotes.R
-import com.tilly.securenotes.data.model.EditorToolbarActivity
+import com.tilly.securenotes.utilities.InputFocusUtilities
 import com.tilly.securenotes.databinding.ActivityEditorBinding
+import java.lang.ref.WeakReference
 import java.util.*
 
-class EditorActivity : EditorToolbarActivity() {
+class EditorActivity : AppCompatActivity() {
     private lateinit var binding: ActivityEditorBinding
     private lateinit var viewModel: EditorViewModel
 
@@ -44,28 +44,14 @@ class EditorActivity : EditorToolbarActivity() {
         binding.titleEditText.setText(viewModel.noteTitle)
         binding.dateEdited.text = viewModel.getThisNoteTimeString()
 
-        //TODO: Periodically update text on server as typing
-        binding.titleEditText.doOnTextChanged { text, start, before, count ->
-            viewModel.updateNoteTitle(text.toString())
-        }
-        binding.contentTextInput.doOnTextChanged { text, start, before, count ->
-            viewModel.updateNoteContent(text.toString())
+        //TODO: Periodically update text on server as typing?
+        binding.titleEditText.doAfterTextChanged { editable ->
+            viewModel.updateNoteTitle(editable.toString())
         }
 
-    }
-
-
-    // After views have been initialized, if the note is new then focus title field and show keyboard
-    override fun onResume() {
-        super.onResume()
-
-        // If new note then automatically focus title field
-        if (viewModel.isNoteNew){
-            startEditingTextField(binding.titleEditText)
+        binding.contentTextInput.doAfterTextChanged { editable ->
+            viewModel.updateNoteContent(editable.toString())
         }
-
-
-
     }
 
     // Setting actions for toolbar buttons
@@ -92,19 +78,28 @@ class EditorActivity : EditorToolbarActivity() {
                     binding.titleEditText.requestFocusFromTouch()
                 } else {
                     // Hide keyboard, unfocus edittext view and submit current note to firebase
-                    stopEditingText()
+                    InputFocusUtilities.stopEditingText(context = this, currentFocus = currentFocus)
                     viewModel.saveNote()
                 }
                 true
             }
             android.R.id.home -> {
                 // Pressing back arrow button on toolbar finishes activity
-                stopEditingText()
-                viewModel.saveNote()
-                // TODO: Commit note onCreate then compare euality, if diff then noteactivity needs to update
-                val returnIntent = Intent()
-                setResult(Activity.RESULT_CANCELED, returnIntent)
-                finish()
+
+                // If title field is empty then show error message and focus title field
+                if (binding.titleEditText.text.isBlank() && binding.contentTextInput.text.isNotBlank()){
+                    Toast.makeText(this, "Please enter a title", Toast.LENGTH_SHORT).show()
+                    binding.titleEditText.requestFocusFromTouch()
+                } else {
+                    // Hide keyboard, unfocus edittext view and submit current note to firebase
+                    InputFocusUtilities.stopEditingText(context = this, currentFocus = currentFocus)
+                    if (binding.titleEditText.text.isNotBlank()){
+                        viewModel.saveNote()
+                    }
+                    val returnIntent = Intent()
+                    setResult(Activity.RESULT_CANCELED, returnIntent)
+                    finish()
+                }
                 true
             }
             else -> return super.onOptionsItemSelected(item)
@@ -122,11 +117,17 @@ class EditorActivity : EditorToolbarActivity() {
         val deleteMenuItem = menu?.findItem(R.id.delete)
         val submitMenuItem = menu?.findItem(R.id.submit)
 
-        val editTextFocusListener = getUpdateToolbarIfEditingListener(shareMenuItem, deleteMenuItem, submitMenuItem)
+
+        val editTextFocusListener = InputFocusUtilities.getUpdateMenuIfEditingListener(submitMenuItem, deleteMenuItem, shareMenuItem)
 
         // Changing toolbar button visibility if focused
         binding.titleEditText.onFocusChangeListener = editTextFocusListener
         binding.contentTextInput.onFocusChangeListener = editTextFocusListener
+
+        // After views have been initialized, if the note is new then focus title field and show keyboard
+        if (viewModel.isNoteNew){
+            InputFocusUtilities.startEditingTextField(WeakReference(this), binding.titleEditText)
+        }
 
         return super.onCreateOptionsMenu(menu)
     }

@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.google.android.gms.tasks.Task
+import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
@@ -26,8 +27,17 @@ object NoteRepository {
         return auth.uid!!
     }
 
+    fun getLoggedInUser(): User {
+        val fbUser = AuthRepository.getFirebaseUser()!!
+        return User(email = fbUser.email!!,
+            name = fbUser.displayName!!,
+            avatar = fbUser.photoUrl.toString())
+    }
+
+
     fun getCurrentUser(): LiveData<ResultStatusWrapper<User>>{
         val userLiveData: MutableLiveData<ResultStatusWrapper<User>> = MutableLiveData()
+
 
         firestore.collection(USERS_COLLECTION)
             .whereEqualTo("external_id", getUserId())

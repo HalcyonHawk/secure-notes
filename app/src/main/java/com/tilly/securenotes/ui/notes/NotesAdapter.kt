@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.tilly.securenotes.data.model.Note
 import com.tilly.securenotes.databinding.NoteItemBinding
 import com.tilly.securenotes.ui.editor.EditorActivity
+import com.tilly.securenotes.utilities.NotesUtility
 
 class NotesAdapter(val noteList: ArrayList<Note>) : RecyclerView.Adapter<NotesAdapter.NoteViewHolder>() {
 

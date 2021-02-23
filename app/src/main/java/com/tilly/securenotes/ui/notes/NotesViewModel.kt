@@ -4,7 +4,7 @@ import androidx.lifecycle.*
 import com.tilly.securenotes.data.model.ResultStatusWrapper
 import com.tilly.securenotes.data.model.Note
 import com.tilly.securenotes.data.repository.NoteRepository
-import com.tilly.securenotes.ui.notes.NotesUtility.observeOnce
+import com.tilly.securenotes.utilities.NotesUtility.observeOnce
 import kotlin.collections.ArrayList
 
 class NotesViewModel: ViewModel() {

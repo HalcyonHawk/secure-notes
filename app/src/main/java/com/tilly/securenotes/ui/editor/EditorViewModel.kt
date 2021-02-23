@@ -6,7 +6,7 @@ import androidx.lifecycle.ViewModel
 import com.google.android.gms.tasks.Task
 import com.tilly.securenotes.data.model.Note
 import com.tilly.securenotes.data.repository.NoteRepository
-import com.tilly.securenotes.ui.notes.NotesUtility
+import com.tilly.securenotes.utilities.NotesUtility
 import java.util.*
 
 class EditorViewModel: ViewModel() {

@@ -1,4 +1,4 @@
-package com.tilly.securenotes.ui.notes
+package com.tilly.securenotes.utilities
 
 
 import androidx.lifecycle.LiveData
@@ -26,7 +26,11 @@ object NotesUtility {
 
     // Format date function variation  taking note object instead of Date
     fun formatTimeString(note: Note, locale: Locale, timeZone: TimeZone): String {
-        return formatTimeString(note.lastEdited, locale, timeZone)
+        return formatTimeString(
+            note.lastEdited,
+            locale,
+            timeZone
+        )
     }
 
     // Format date as hour:minute day month year and format with given locale

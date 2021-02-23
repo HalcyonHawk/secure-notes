@@ -3,6 +3,7 @@ package com.tilly.securenotes.ui.register
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.View
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.lifecycle.Observer
@@ -22,13 +23,15 @@ class RegisterActivity : AppCompatActivity() {
         binding.register.setOnClickListener {
             // If password confirmation correct then register user else show error
             if (binding.password.text.toString() == binding.confirmPassword.text.toString()){
-                // Observe registration result
-
+                binding.loading.visibility = View.VISIBLE
+                // Observe and handle registration result
                 viewModel.registerAccount(binding.username.text.toString(),
                     binding.password.text.toString(),
                     binding.displayName.text.toString())
                     .observe(this, Observer { success ->
-                    if (success) {
+                        binding.loading.visibility = View.VISIBLE
+
+                        if (success) {
                         val intent = Intent(this, NotesActivity::class.java)
                         startActivity(intent)
                     } else {

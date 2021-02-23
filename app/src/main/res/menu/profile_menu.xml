@@ -13,6 +13,7 @@
         android:id="@+id/submit_profile"
         android:icon="@drawable/ic_done_white_24dp"
         android:title="Submit Profile Changes"
+        android:visible="false"
         app:showAsAction="always"/>
 
     <item
