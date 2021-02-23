@@ -56,14 +56,24 @@ class EditorViewModel: ViewModel() {
 
 
     // If isEditing note then edit existing document on firebase by ID else create new document
-    fun saveNote() {
-
+    fun saveNote(): LiveData<Boolean> {
+        val success = MutableLiveData<Boolean>()
+        currentNote.lastEdited = Calendar.getInstance().time
         if (!isNoteNew){
             NoteRepository.editNoteOnFirebase(currentNote)
+                .addOnCompleteListener {
+                    success.postValue(it.isSuccessful)
+                }
         } else {
-            currentNote.noteId = NoteRepository.createNoteOnFirebase(currentNote)
-
+            NoteRepository.createNoteOnFirebase(currentNote)
+                .addOnSuccessListener { documentReference ->
+                    currentNote.noteId = documentReference.id
+                }
+                .addOnCompleteListener{
+                    success.postValue(it.isSuccessful)
+                }
         }
+        return success
     }
 
     // Deleting note and passing back resulting Task obj to set callback in view

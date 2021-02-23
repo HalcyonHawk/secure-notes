@@ -6,6 +6,7 @@ import androidx.lifecycle.MutableLiveData
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.tilly.securenotes.data.model.ResultStatusWrapper
@@ -89,28 +90,26 @@ object NoteRepository {
     }
 
     // Submit note to firebase and update current note id returns id for new note
-    fun createNoteOnFirebase(newNote: Note): String{
+    fun createNoteOnFirebase(newNote: Note): Task<DocumentReference> {
         val noteHashMap = hashMapOf("user_id" to getUserId(),
             "title" to newNote.title,
             "content" to newNote.content,
             "last_edited_date" to newNote.lastEdited)
-        var newId: String = ""
-        firestore.collection(NOTES_COLLECTION)
+        return firestore.collection(NOTES_COLLECTION)
             .add(noteHashMap)
             .addOnFailureListener{
                 Log.e("firebase", "Error creating document", it)
             }
-        return newId
     }
 
     // Edit existing note on firebase by note document ID
-    fun editNoteOnFirebase(newNote: Note){
+    fun editNoteOnFirebase(newNote: Note): Task<Void> {
         val noteHashMap = hashMapOf("user_id" to getUserId(),
             "title" to newNote.title,
             "content" to newNote.content,
             "last_edited_date" to newNote.lastEdited)
 
-        firestore.collection(NOTES_COLLECTION)
+        return firestore.collection(NOTES_COLLECTION)
             .document(newNote.noteId)
             .set(noteHashMap)
             .addOnFailureListener{

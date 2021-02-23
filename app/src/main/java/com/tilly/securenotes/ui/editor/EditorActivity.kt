@@ -10,10 +10,12 @@ import android.view.MenuItem
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.doAfterTextChanged
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.tilly.securenotes.R
 import com.tilly.securenotes.utilities.InputFocusUtilities
 import com.tilly.securenotes.databinding.ActivityEditorBinding
+import com.tilly.securenotes.utilities.NotesUtility.observeOnce
 import java.lang.ref.WeakReference
 import java.util.*
 
@@ -87,7 +89,13 @@ class EditorActivity : AppCompatActivity() {
                 } else {
                     // Hide keyboard, unfocus edittext view and submit current note to firebase
                     InputFocusUtilities.stopEditingText(context = this, currentFocus = currentFocus)
-                    viewModel.saveNote()
+                    viewModel.saveNote().observeOnce(Observer {
+                        if (true){
+                            binding.dateEdited.text = viewModel.getThisNoteTimeString()
+                        } else {
+                            // TODO: Handle
+                        }
+                    })
                 }
                 true
             }

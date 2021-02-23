@@ -65,11 +65,7 @@ class NotesActivity : AppCompatActivity() {
         viewModel.loadNotes().observe(this, Observer { resultStatusWrapper ->
             when (resultStatusWrapper) {
                 is ResultStatusWrapper.Success -> {
-                    Toast.makeText(
-                        this,
-                        "Notes loaded successfully",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    // TODO: Handle?
                 }
                 is ResultStatusWrapper.Error -> {
                     throw resultStatusWrapper.exception
