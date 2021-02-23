@@ -9,5 +9,6 @@ class RegisterViewModel: ViewModel() {
     fun registerAccount(email: String,
                         password: String, displayName: String): LiveData<Boolean>{
         return AuthRepository.createAccount(email, password, displayName)
+
     }
 }

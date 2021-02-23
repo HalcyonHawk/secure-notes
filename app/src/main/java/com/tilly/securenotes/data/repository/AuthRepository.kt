@@ -31,7 +31,7 @@ object AuthRepository {
                       password: String,
                       displayName: String): LiveData<Boolean> {
         val resultLiveData: MutableLiveData<Boolean> = MutableLiveData()
-
+        // TODO: Unpoop this
         auth.createUserWithEmailAndPassword(email, password).addOnCompleteListener{ result ->
             if (result.isSuccessful){
                 // If user crated, add to db
@@ -42,7 +42,12 @@ object AuthRepository {
                 firestore.collection("users")
                     .add(user)
                     .addOnSuccessListener {
-                        resultLiveData.postValue(true)
+                        // Set display name when user created
+                        ProfileRepository.editUsername(displayName)
+                            .addOnCompleteListener { task ->
+
+                                resultLiveData.postValue(task.isSuccessful)
+                            }
                     }
                     .addOnFailureListener{
                         resultLiveData.postValue(false)

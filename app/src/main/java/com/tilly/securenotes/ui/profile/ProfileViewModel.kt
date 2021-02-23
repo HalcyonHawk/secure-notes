@@ -6,6 +6,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
+import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.tilly.securenotes.data.model.ResultStatusWrapper
@@ -140,6 +141,14 @@ class ProfileViewModel : ViewModel() {
             }
     }
 
+    fun deleteUser(): Task<Void> {
+
+        return ProfileRepository.deleteUser()
+            .addOnFailureListener {
+                Log.e("firebase", "delete user: failed to delete user", it)
+            }
+    }
+
     fun loadProfilePicture(){
         ProfileRepository.getProfilePictureURL()
             .addOnSuccessListener { uri ->
@@ -148,7 +157,7 @@ class ProfileViewModel : ViewModel() {
         }
             .addOnFailureListener {
                 _profilePicUri.postValue(null)
-                Log.e("firebse", "loadProfilePicture: failed to load profile pic", it)
+                Log.e("firebase", "loadProfilePicture: failed to load profile pic", it)
             }
     }
 

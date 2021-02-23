@@ -1,23 +1,27 @@
 package com.tilly.securenotes.ui.profile
 
+import android.content.DialogInterface
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.res.ResourcesCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuthRecentLoginRequiredException
 import com.kroegerama.imgpicker.BottomSheetImagePicker
 import com.kroegerama.imgpicker.ButtonType
 import com.squareup.picasso.Picasso
 import com.tilly.securenotes.R
-import com.tilly.securenotes.utilities.InputFocusUtilities
-import com.tilly.securenotes.data.model.User
 import com.tilly.securenotes.databinding.ActivityProfileBinding
 import com.tilly.securenotes.ui.login.LoginActivity
+import com.tilly.securenotes.utilities.InputFocusUtilities
 import com.tilly.securenotes.utilities.NotesUtility.observeOnce
 
 class ProfileActivity : AppCompatActivity(), BottomSheetImagePicker.OnImagesSelectedListener {
@@ -55,19 +59,15 @@ class ProfileActivity : AppCompatActivity(), BottomSheetImagePicker.OnImagesSele
             if (uri != null) {
                 Picasso.get().load(uri).into(binding.profileImage)
             } else {
-                Toast.makeText(this, "Failed to load profile picture", Toast.LENGTH_SHORT)
-                    .show()
+                binding.profileImage.setImageDrawable(ResourcesCompat.getDrawable(resources, R.drawable.ic_account_box_black_24dp, null))
+
             }
         })
 
         // Register listener for auth state change
         viewModel.registerAuthListener(FirebaseAuth.AuthStateListener { auth ->
             if (auth.currentUser == null) {
-                val i = Intent(this, LoginActivity::class.java)
-                i.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or
-                        Intent.FLAG_ACTIVITY_CLEAR_TASK or
-                        Intent.FLAG_ACTIVITY_NEW_TASK
-                startActivity(i)
+                goBackToLogin()
             }
         })
 
@@ -94,7 +94,13 @@ class ProfileActivity : AppCompatActivity(), BottomSheetImagePicker.OnImagesSele
         viewModel.loadProfilePicture()
     }
 
-
+    fun goBackToLogin(){
+        val i = Intent(this, LoginActivity::class.java)
+        i.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                Intent.FLAG_ACTIVITY_CLEAR_TASK or
+                Intent.FLAG_ACTIVITY_NEW_TASK
+        startActivity(i)
+    }
     override fun onImagesSelected(uris: List<Uri>, tag: String?) {
         viewModel.updateProfilePicture(uris.first().normalizeScheme())
     }
@@ -138,6 +144,7 @@ class ProfileActivity : AppCompatActivity(), BottomSheetImagePicker.OnImagesSele
                 })
             }
             R.id.delete_account -> {
+                showDeleteUserDialog()
             }
             R.id.logout -> {
                 viewModel.logout()
@@ -149,4 +156,31 @@ class ProfileActivity : AppCompatActivity(), BottomSheetImagePicker.OnImagesSele
         }
         return super.onOptionsItemSelected(item)
     }
+
+    fun showDeleteUserDialog() {
+        // setup the alert builder
+        val builder: AlertDialog.Builder = AlertDialog.Builder(this)
+        builder.setTitle("Delete Account")
+        builder.setMessage("Would you like to delete your account?")
+
+        // add the buttons
+        builder.setPositiveButton("Yes") { dialog, which ->
+            viewModel.deleteUser()
+                .addOnSuccessListener {
+                    goBackToLogin()
+                    Toast.makeText(this, "Your account has been deleted", Toast.LENGTH_LONG).show()
+                }
+                .addOnFailureListener {
+                    if (it is FirebaseAuthRecentLoginRequiredException){
+                        Toast.makeText(this, "Logout and try again to delete account", Toast.LENGTH_LONG).show()
+                    }
+                }
+        }
+        builder.setNegativeButton("No", null)
+
+        // create and show the alert dialog
+        val dialog: AlertDialog = builder.create()
+        dialog.show()
+    }
+
 }

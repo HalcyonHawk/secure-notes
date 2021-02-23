@@ -39,6 +39,10 @@ object ProfileRepository {
             .update(editedFields)
     }
 
+    fun deleteUser(): Task<Void> {
+        return AuthRepository.getFirebaseUser()!!.delete()
+    }
+
     fun editEmail(newEmail: String): Task<Void> {
         return AuthRepository.getFirebaseUser()!!.updateEmail(newEmail)
     }

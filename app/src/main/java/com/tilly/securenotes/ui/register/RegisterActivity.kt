@@ -32,6 +32,7 @@ class RegisterActivity : AppCompatActivity() {
                         binding.loading.visibility = View.VISIBLE
 
                         if (success) {
+
                         val intent = Intent(this, NotesActivity::class.java)
                         startActivity(intent)
                     } else {
