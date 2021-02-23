@@ -23,23 +23,30 @@ class RegisterActivity : AppCompatActivity() {
         binding.register.setOnClickListener {
             // If password confirmation correct then register user else show error
             if (binding.password.text.toString() == binding.confirmPassword.text.toString()){
-                binding.loading.visibility = View.VISIBLE
-                // Observe and handle registration result
-                viewModel.registerAccount(binding.username.text.toString(),
-                    binding.password.text.toString(),
-                    binding.displayName.text.toString())
-                    .observe(this, Observer { success ->
-                        binding.loading.visibility = View.VISIBLE
+                if (binding.password.text.length < 6) {
+                    Toast.makeText(
+                        this,
+                        "Password must be at least 6 characters long",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                } else {
+                    binding.loading.visibility = View.VISIBLE
+                    // Observe and handle registration result
+                    viewModel.registerAccount(binding.username.text.toString(),
+                        binding.password.text.toString(),
+                        binding.displayName.text.toString())
+                        .observe(this, Observer { success ->
+                            binding.loading.visibility = View.VISIBLE
 
-                        if (success) {
+                            if (success) {
 
-                        val intent = Intent(this, NotesActivity::class.java)
-                        startActivity(intent)
-                    } else {
-                        Toast.makeText(this, "Registration failed", Toast.LENGTH_SHORT).show()
-                    }
-                })
-
+                                val intent = Intent(this, NotesActivity::class.java)
+                                startActivity(intent)
+                            } else {
+                                Toast.makeText(this, "Registration failed", Toast.LENGTH_SHORT).show()
+                            }
+                        })
+                }
             } else {
                 Toast.makeText(this, "Passwords don't match, try again.", Toast.LENGTH_SHORT).show()
             }
