@@ -27,7 +27,7 @@ class ProfileViewModel : ViewModel() {
     // Strings for edited username and email in text fields
 
 
-    private val _profilePicUri = MutableLiveData<Uri?>(Uri.parse(DEFAULT_IMG))
+    private val _profilePicUri = MutableLiveData<Uri?>()
     val profilePicUri: LiveData<Uri?> get() = _profilePicUri
 
     fun logout() {
@@ -74,6 +74,20 @@ class ProfileViewModel : ViewModel() {
         return successLiveData
     }
 
+    fun changePassword(pass: String): LiveData<Boolean>{
+        val passChanged: MutableLiveData<Boolean> = MutableLiveData()
+        user.updatePassword(pass)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    passChanged.postValue(true)
+                } else {
+                    Log.e("firebase", "Pass changed failed", task.exception)
+                    passChanged.postValue(false)
+                }
+
+            }
+        return passChanged
+    }
 
     // Get current user from firestore and alert the profile activity
     fun initCurrentUser() {
@@ -118,6 +132,7 @@ class ProfileViewModel : ViewModel() {
             }
             .addOnCompleteListener{task ->
                 if (task.isSuccessful){
+
                     loadNewProfilePicture()
                 } else {
                     Log.e("firebase", "updateProfilePicture: ", task.exception)
@@ -125,10 +140,30 @@ class ProfileViewModel : ViewModel() {
             }
     }
 
+    fun loadProfilePicture(){
+        ProfileRepository.getProfilePictureURL()
+            .addOnSuccessListener { uri ->
+                _profilePicUri.postValue(uri)
+
+        }
+            .addOnFailureListener {
+                _profilePicUri.postValue(null)
+                Log.e("firebse", "loadProfilePicture: failed to load profile pic", it)
+            }
+    }
+
 
     private fun loadNewProfilePicture(){
         ProfileRepository.getProfilePictureURL().addOnSuccessListener {uri ->
-            _profilePicUri.postValue(uri)
+            ProfileRepository.updateProfilePicUrl(uri)
+                .addOnCompleteListener {task ->
+                    if (task.isSuccessful){
+                        _profilePicUri.postValue(uri)
+                    } else {
+                        Log.e("firebase", "loadNewProfilePicture: cant get update url", task.exception)
+                        _profilePicUri.postValue(null)
+                    }
+                }
         }.addOnFailureListener {
             Log.e("firebase", "loadNewProfilePicture: cant get dowload uri", it)
             _profilePicUri.postValue(null)

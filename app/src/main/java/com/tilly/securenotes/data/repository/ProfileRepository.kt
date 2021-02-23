@@ -56,6 +56,12 @@ object ProfileRepository {
         return AuthRepository.getFirebaseUser()!!.updatePassword(newPass)
     }
 
+    fun updateProfilePicUrl(uri: Uri): Task<Void> {
+        val updateProfile = UserProfileChangeRequest.Builder()
+            .setPhotoUri(uri).build()
+        return AuthRepository.getFirebaseUser()!!.updateProfile(updateProfile)
+    }
+
     fun uploadProfilePicture(uri: Uri): UploadTask{
         val profileImageRef = storageRef.child(getUserId())
         return profileImageRef.putFile(uri)

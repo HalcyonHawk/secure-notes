@@ -60,14 +60,22 @@ class EditorActivity : AppCompatActivity() {
 
         return when(item.itemId){
             R.id.share -> {
-                Toast.makeText(this, "Share", Toast.LENGTH_SHORT).show()
+                val sendIntent: Intent = Intent().apply {
+                    action = Intent.ACTION_SEND
+                    putExtra(Intent.EXTRA_TEXT, viewModel.noteContent)
+                    putExtra(Intent.EXTRA_TITLE, viewModel.noteTitle)
+                    type = "text/plain"
+                }
+
+                val shareIntent = Intent.createChooser(sendIntent, null)
+                startActivity(shareIntent)
                 true
             }
             R.id.delete -> {
-                Toast.makeText(this, "Note Deleted", Toast.LENGTH_SHORT).show()
                 // If note deleted successfully, finish activity
                 viewModel.deleteCurrentNote().addOnSuccessListener {
                     finish()
+                    Toast.makeText(this, "Note Deleted", Toast.LENGTH_SHORT).show()
                 }
                 true
             }

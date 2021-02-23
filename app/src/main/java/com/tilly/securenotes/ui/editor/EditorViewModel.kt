@@ -55,17 +55,6 @@ class EditorViewModel: ViewModel() {
     }
 
 
-    fun updateEditedNote(){
-
-    }
-
-    // Function for checking if notes have been edited or are the same
-    // TODO: Update note when typing?
-    fun haveNotesBeenEdited(oldNote: Note, newNote: Note): Boolean{
-        TODO("not implemented")
-        return oldNote != newNote
-    }
-
     // If isEditing note then edit existing document on firebase by ID else create new document
     fun saveNote() {
 

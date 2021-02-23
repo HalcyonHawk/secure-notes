@@ -56,7 +56,6 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:contentDescription="@string/profile_picture"
-                    android:src="@color/colorPrimary"
                     android:clickable="true"
                     android:foreground="?android:attr/selectableItemBackground"/>
             </FrameLayout>
@@ -140,6 +139,7 @@
                 app:layout_constraintVertical_bias="0.05" />
 
             <Button
+                android:id="@+id/submit_pass"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:text="@string/change_password"
