@@ -4,17 +4,12 @@ import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
-import com.tilly.securenotes.data.model.ResultStatusWrapper
-import com.tilly.securenotes.data.model.User
 import com.tilly.securenotes.data.repository.AuthRepository
-import com.tilly.securenotes.data.repository.NoteRepository
 import com.tilly.securenotes.data.repository.ProfileRepository
-import com.tilly.securenotes.utilities.NotesUtility.observeOnce
 
 class ProfileViewModel : ViewModel() {
     private val user: FirebaseUser = AuthRepository.getFirebaseUser()!!

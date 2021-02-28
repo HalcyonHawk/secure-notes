@@ -14,14 +14,13 @@ class NotesViewModel: ViewModel() {
     // Getter to only expose on-mutable live data object to view
     val notesList: LiveData<ArrayList<Note>> get() = _notesList
 
-    // TODO: Write javadoc comments & write reload notes function
+
     // Load new notes into live data ArrayList  from firebase using repository if successful
     // return firebase Task for error handling or success handling in view
     fun loadNotes(): LiveData<ResultStatusWrapper<ArrayList<Note>>> {
         val resultLiveData: MutableLiveData<ResultStatusWrapper<ArrayList<Note>>> = MutableLiveData()
         // Loading notes
         // Using observeOnce extension function defined in NotesUtils to automatically remove observer after Observer.onChanged executed
-        // NOTE: using observeForever not observe in observeOnce function
         NoteRepository.loadNotes().observeOnce(Observer { response ->
             when(response){
                 // If response from firebase successful then post newly loaded note list into _notesList

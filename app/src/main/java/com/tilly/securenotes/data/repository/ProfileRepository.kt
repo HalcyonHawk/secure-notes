@@ -1,21 +1,13 @@
 package com.tilly.securenotes.data.repository
 
 import android.net.Uri
-import android.util.Log
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.UserProfileChangeRequest
-import com.google.firebase.auth.ktx.userProfileChangeRequest
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.UploadTask
 import com.google.firebase.storage.ktx.storage
-import com.google.firebase.storage.ktx.storageMetadata
-
-import com.tilly.securenotes.data.model.ResultStatusWrapper
-import com.tilly.securenotes.data.model.User
 
 object ProfileRepository {
     private val firestore = Firebase.firestore

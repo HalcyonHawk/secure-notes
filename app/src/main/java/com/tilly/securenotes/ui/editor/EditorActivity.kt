@@ -46,7 +46,6 @@ class EditorActivity : AppCompatActivity() {
         binding.titleEditText.setText(viewModel.noteTitle)
         binding.dateEdited.text = viewModel.getThisNoteTimeString()
 
-        //TODO: Periodically update text on server as typing?
         binding.titleEditText.doAfterTextChanged { editable ->
             viewModel.updateNoteTitle(editable.toString())
         }
@@ -89,11 +88,12 @@ class EditorActivity : AppCompatActivity() {
                 } else {
                     // Hide keyboard, unfocus edittext view and submit current note to firebase
                     InputFocusUtilities.stopEditingText(context = this, currentFocus = currentFocus)
+                    // Save note when pressing submit button. if note saved successfully then change last edited date or show error message
                     viewModel.saveNote().observeOnce(Observer {
-                        if (true){
+                        if (it){
                             binding.dateEdited.text = viewModel.getThisNoteTimeString()
                         } else {
-                            // TODO: Handle
+                            Toast.makeText(this, "Failed to save note", Toast.LENGTH_SHORT).show()
                         }
                     })
                 }

@@ -33,7 +33,6 @@ class NotesActivity : AppCompatActivity() {
         binding.notesList.adapter = notesAdapter
         binding.notesList.layoutManager = LinearLayoutManager(this)
 
-        //TODO: Swipe list menu item
 
         viewModel.notesList.observe(this, Observer { notes ->
             notesAdapter.updateNotes(notes)
@@ -65,7 +64,8 @@ class NotesActivity : AppCompatActivity() {
         viewModel.loadNotes().observe(this, Observer { resultStatusWrapper ->
             when (resultStatusWrapper) {
                 is ResultStatusWrapper.Success -> {
-                    // TODO: Handle?
+                    Toast.makeText(this, "Notes loaded", Toast.LENGTH_SHORT).show()
+
                 }
                 is ResultStatusWrapper.Error -> {
                     throw resultStatusWrapper.exception

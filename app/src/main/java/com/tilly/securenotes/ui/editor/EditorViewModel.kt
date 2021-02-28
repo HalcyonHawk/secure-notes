@@ -23,13 +23,11 @@ class EditorViewModel: ViewModel() {
 
 
     // Getters to only expose required Note object properties
-    // TODO use getters and setters?
     val noteTitle get() = currentNote.title
     val noteContent get() = currentNote.content
     val isNoteNew get() = currentNote.noteId.isBlank()
 
     val updateNoteTitle = { title: String ->
-        // TODO: Sbmit to db periodially?
         this.currentNote.title = title
     }
 
@@ -55,6 +53,7 @@ class EditorViewModel: ViewModel() {
     }
 
 
+    // Function to save note state on firebase
     // If isEditing note then edit existing document on firebase by ID else create new document
     fun saveNote(): LiveData<Boolean> {
         val success = MutableLiveData<Boolean>()
@@ -85,9 +84,6 @@ class EditorViewModel: ViewModel() {
         return NoteRepository.deleteNote(id)
     }
 
-    fun saveNoteToLocalDb(note: Note){
-        TODO()
-    }
 
     // Getting formatted time string for passed note
     fun getFormattedDateString(date: Date): String{

@@ -4,15 +4,12 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.google.android.gms.tasks.Task
-import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.tilly.securenotes.data.model.ResultStatusWrapper
 import com.tilly.securenotes.data.model.Note
-import com.tilly.securenotes.data.model.User
-import java.io.FileNotFoundException
 import kotlin.collections.ArrayList
 
 object NoteRepository {
@@ -21,49 +18,43 @@ object NoteRepository {
 
     // Notes collection name constant
     private const val NOTES_COLLECTION = "notes"
-    private const val USERS_COLLECTION = "users"
+
 
     // Get current user ID
     private fun getUserId(): String{
         return auth.uid!!
     }
 
-    fun getLoggedInUser(): User {
-        val fbUser = AuthRepository.getFirebaseUser()!!
-        return User(email = fbUser.email!!,
-            name = fbUser.displayName!!,
-            avatar = fbUser.photoUrl.toString())
-    }
 
-
-    fun getCurrentUser(): LiveData<ResultStatusWrapper<User>>{
-        val userLiveData: MutableLiveData<ResultStatusWrapper<User>> = MutableLiveData()
-
-
-        firestore.collection(USERS_COLLECTION)
-            .whereEqualTo("external_id", getUserId())
-            .get()
-            .addOnSuccessListener { queryResult ->
-                val documents = queryResult.documents
-                // Check if user document with ID from current firebase auth user is found
-                if (documents.isNotEmpty()){
-                    val doc = documents.first()
-                    val user = User(email = doc.getString("email")!!,
-                        name = doc.getString("external_id")!!,
-                        avatar = doc.getString("avatar")!!)
-                    userLiveData.postValue(ResultStatusWrapper.Success(user))
-                } else {
-                    // If user not found, return error in result wrapper
-                    userLiveData.postValue(ResultStatusWrapper.Error(null,
-                        exception = NoSuchElementException("User not found")))
-                }
-            }
-            .addOnFailureListener { exception ->
-                userLiveData.postValue(ResultStatusWrapper.Error(null, exception))
-            }
-
-        return userLiveData
-    }
+    // TODO: Remove
+//    fun getCurrentUser(): LiveData<ResultStatusWrapper<User>>{
+//        val userLiveData: MutableLiveData<ResultStatusWrapper<User>> = MutableLiveData()
+//
+//
+//        firestore.collection(USERS_COLLECTION)
+//            .whereEqualTo("external_id", getUserId())
+//            .get()
+//            .addOnSuccessListener { queryResult ->
+//                val documents = queryResult.documents
+//                // Check if user document with ID from current firebase auth user is found
+//                if (documents.isNotEmpty()){
+//                    val doc = documents.first()
+//                    val user = User(email = doc.getString("email")!!,
+//                        name = doc.getString("external_id")!!,
+//                        avatar = doc.getString("avatar")!!)
+//                    userLiveData.postValue(ResultStatusWrapper.Success(user))
+//                } else {
+//                    // If user not found, return error in result wrapper
+//                    userLiveData.postValue(ResultStatusWrapper.Error(null,
+//                        exception = NoSuchElementException("User not found")))
+//                }
+//            }
+//            .addOnFailureListener { exception ->
+//                userLiveData.postValue(ResultStatusWrapper.Error(null, exception))
+//            }
+//
+//        return userLiveData
+//    }
 
     // Load notes for current user and pass async task to viewmodel
     //TODO: Change to new ResultStatusWrapper
