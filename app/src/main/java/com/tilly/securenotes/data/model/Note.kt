@@ -6,7 +6,8 @@ import java.util.*
 data class Note( var noteId: String,
     var title: String,
     var content: String,
-    var lastEdited: Date
+    var lastEdited: Date,
+    var favorite: Boolean = false
 ) {
     // Overriding equals function for comparing if note objects are different
     override fun equals(other: Any?): Boolean {

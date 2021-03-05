@@ -26,36 +26,6 @@ object NoteRepository {
     }
 
 
-    // TODO: Remove
-//    fun getCurrentUser(): LiveData<ResultStatusWrapper<User>>{
-//        val userLiveData: MutableLiveData<ResultStatusWrapper<User>> = MutableLiveData()
-//
-//
-//        firestore.collection(USERS_COLLECTION)
-//            .whereEqualTo("external_id", getUserId())
-//            .get()
-//            .addOnSuccessListener { queryResult ->
-//                val documents = queryResult.documents
-//                // Check if user document with ID from current firebase auth user is found
-//                if (documents.isNotEmpty()){
-//                    val doc = documents.first()
-//                    val user = User(email = doc.getString("email")!!,
-//                        name = doc.getString("external_id")!!,
-//                        avatar = doc.getString("avatar")!!)
-//                    userLiveData.postValue(ResultStatusWrapper.Success(user))
-//                } else {
-//                    // If user not found, return error in result wrapper
-//                    userLiveData.postValue(ResultStatusWrapper.Error(null,
-//                        exception = NoSuchElementException("User not found")))
-//                }
-//            }
-//            .addOnFailureListener { exception ->
-//                userLiveData.postValue(ResultStatusWrapper.Error(null, exception))
-//            }
-//
-//        return userLiveData
-//    }
-
     // Load notes for current user and pass async task to viewmodel
     //TODO: Change to new ResultStatusWrapper
     fun loadNotes(): LiveData<ResultStatusWrapper<ArrayList<Note>>> {
@@ -69,7 +39,8 @@ object NoteRepository {
                     noteList.add(Note(noteId = document.id,
                         title = document.getString("title")!!,
                         content = document.getString("content")!!,
-                        lastEdited = document.getDate("last_edited_date")!!))
+                        lastEdited = document.getDate("last_edited_date")!!,
+                        favorite = document.getBoolean("is_favorite")!!))
                 }
                 // Post successful response with note list
                 liveDataWrapper.postValue(ResultStatusWrapper.Success(noteList))
@@ -85,7 +56,8 @@ object NoteRepository {
         val noteHashMap = hashMapOf("user_id" to getUserId(),
             "title" to newNote.title,
             "content" to newNote.content,
-            "last_edited_date" to newNote.lastEdited)
+            "last_edited_date" to newNote.lastEdited,
+            "is_favorite" to false)
         return firestore.collection(NOTES_COLLECTION)
             .add(noteHashMap)
             .addOnFailureListener{
@@ -98,7 +70,8 @@ object NoteRepository {
         val noteHashMap = hashMapOf("user_id" to getUserId(),
             "title" to newNote.title,
             "content" to newNote.content,
-            "last_edited_date" to newNote.lastEdited)
+            "last_edited_date" to newNote.lastEdited,
+            "is_favorite" to newNote.favorite)
 
         return firestore.collection(NOTES_COLLECTION)
             .document(newNote.noteId)
@@ -106,6 +79,14 @@ object NoteRepository {
             .addOnFailureListener{
                 Log.e("firebase", "Error creating document", it)
             }
+    }
+
+
+
+    fun favoriteNote(noteId: String, favorite: Boolean): Task<Void>{
+        return firestore.collection(NOTES_COLLECTION)
+            .document(noteId)
+            .update("is_favorite", favorite)
     }
 
     fun deleteNote(id: String): Task<Void> {

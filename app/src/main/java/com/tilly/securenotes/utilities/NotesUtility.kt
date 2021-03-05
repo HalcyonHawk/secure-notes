@@ -1,6 +1,7 @@
 package com.tilly.securenotes.utilities
 
 
+import android.content.Intent
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import com.google.gson.Gson
@@ -48,5 +49,17 @@ object NotesUtility {
                 removeObserver(this)
             }
         })
+    }
+
+    // Utility function to create a share intent which opens share menu to share a note title and text
+    fun createShareIntent(noteTitle: String, noteContent: String): Intent{
+        val sendIntent: Intent = Intent().apply {
+            action = Intent.ACTION_SEND
+            putExtra(Intent.EXTRA_TEXT, noteContent)
+            putExtra(Intent.EXTRA_TITLE, noteTitle)
+            type = "text/plain"
+        }
+
+        return Intent.createChooser(sendIntent, null)
     }
 }

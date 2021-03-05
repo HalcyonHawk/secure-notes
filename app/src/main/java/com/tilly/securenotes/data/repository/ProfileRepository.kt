@@ -24,23 +24,17 @@ object ProfileRepository {
         return AuthRepository.getFirebaseAuth().uid!!
     }
 
-// TODO: Remove
-    private fun updateUserDbDoc(editedFields: Map<String, String>): Task<Void>{
-        return getUsersCollection()
-            .document(getUserId())
-            .update(editedFields)
-    }
-
+    // Delete user and return Task object to handle result
     fun deleteUser(): Task<Void> {
         return AuthRepository.getFirebaseUser()!!.delete()
     }
 
+    // Edit user's email on firebase authentication and return task to handle result
     fun editEmail(newEmail: String): Task<Void> {
         return AuthRepository.getFirebaseUser()!!.updateEmail(newEmail)
     }
 
     fun editUsername(newName: String): Task<Void>{
-//        return updateUserDbDoc(hashMapOf("name" to newName))
         val updateProfile = UserProfileChangeRequest.Builder()
             .setDisplayName(newName)
             .build()
@@ -52,6 +46,7 @@ object ProfileRepository {
         return AuthRepository.getFirebaseUser()!!.updatePassword(newPass)
     }
 
+    // Update profile pic url on firebase auth account
     fun updateProfilePicUrl(uri: Uri): Task<Void> {
         val updateProfile = UserProfileChangeRequest.Builder()
             .setPhotoUri(uri).build()
@@ -67,35 +62,4 @@ object ProfileRepository {
         val profileImageRef = storageRef.child(getUserId())
         return profileImageRef.downloadUrl
     }
-
-
-    // Get current user by firebase auth id
-//    fun getCurrentUser(): LiveData<ResultStatusWrapper<User>> {
-//        val userLiveData: MutableLiveData<ResultStatusWrapper<User>> = MutableLiveData()
-//        getUsersCollection()
-//            .whereEqualTo("external_id", getUserId())
-//            .get()
-//            .addOnSuccessListener { queryResult ->
-//                val documents = queryResult.documents
-//                // Check if user document with ID from current firebase auth user is found
-//                if (documents.isNotEmpty()){
-//                    val doc = documents.first()
-//                    val user = User(dbUserId = doc.id,
-//                        email = doc.getString("email")!!,
-//                        name = doc.getString("external_id")!!,
-//                        avatar = doc.getString("avatar")!!)
-//                    userLiveData.postValue(ResultStatusWrapper.Success(user))
-//                } else {
-//                    // If user not found, return NoSuchElementException in result
-//                    userLiveData.postValue(
-//                        ResultStatusWrapper.Error(null,
-//                        exception = NoSuchElementException("User not found")))
-//                }
-//            }
-//            .addOnFailureListener { exception ->
-//                userLiveData.postValue(ResultStatusWrapper.Error(null, exception))
-//            }
-//
-//        return userLiveData
-//    }
 }

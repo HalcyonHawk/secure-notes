@@ -3,18 +3,18 @@ package com.tilly.securenotes.ui.editor
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.res.ResourcesCompat
 import androidx.core.widget.doAfterTextChanged
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.tilly.securenotes.R
 import com.tilly.securenotes.utilities.InputFocusUtilities
 import com.tilly.securenotes.databinding.ActivityEditorBinding
+import com.tilly.securenotes.utilities.NotesUtility
 import com.tilly.securenotes.utilities.NotesUtility.observeOnce
 import java.lang.ref.WeakReference
 import java.util.*
@@ -53,6 +53,7 @@ class EditorActivity : AppCompatActivity() {
         binding.contentTextInput.doAfterTextChanged { editable ->
             viewModel.updateNoteContent(editable.toString())
         }
+
     }
 
     // Setting actions for toolbar buttons
@@ -60,16 +61,23 @@ class EditorActivity : AppCompatActivity() {
         // Getting viewModel instance
 
         return when(item.itemId){
+            R.id.favorite -> {
+                // Favorite note upon pressing button in toolbar
+                viewModel.toggleFavoriteNote()
+                    .addOnFailureListener {
+                    Toast.makeText(this, "Failed to favorite note", Toast.LENGTH_SHORT).show()
+                }.addOnSuccessListener {
+                    // Show toast message depending on if note is favorited or unfavorited
+                    if(viewModel.isCurrentNoteFav)
+                        Toast.makeText(this, "Note favorited" , Toast.LENGTH_SHORT).show()
+                    else
+                        Toast.makeText(this, "Note unfavorited" , Toast.LENGTH_SHORT).show()
+                    }
+                true
+            }
             R.id.share -> {
-                val sendIntent: Intent = Intent().apply {
-                    action = Intent.ACTION_SEND
-                    putExtra(Intent.EXTRA_TEXT, viewModel.noteContent)
-                    putExtra(Intent.EXTRA_TITLE, viewModel.noteTitle)
-                    type = "text/plain"
-                }
-
-                val shareIntent = Intent.createChooser(sendIntent, null)
-                startActivity(shareIntent)
+                // Create and launch share intent with note title and content
+                startActivity(NotesUtility.createShareIntent(viewModel.noteTitle, viewModel.noteContent))
                 true
             }
             R.id.delete -> {
@@ -123,22 +131,39 @@ class EditorActivity : AppCompatActivity() {
 
     }
 
-
+    // Function to set correct favorite icon for toolbar button
+    fun setFavMenuItemIcon(menuItem: MenuItem?, favorite: Boolean){
+        // If current note is favorite then set toolbar button icon to appropriate drawable
+        if (favorite){
+            menuItem?.icon = ResourcesCompat.getDrawable(resources, R.drawable.ic_star_white_24dp, null)
+        } else {
+            menuItem?.icon = ResourcesCompat.getDrawable(resources, R.drawable.ic_star_border_white_24dp, null)
+        }
+    }
 
     // Initialising toolbar buttons and observing if an edit text view is focused to change toolbar button visibility
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.editor_menu, menu)
 
+        val favMenuItem = menu?.findItem(R.id.favorite)
         val shareMenuItem = menu?.findItem(R.id.share)
         val deleteMenuItem = menu?.findItem(R.id.delete)
         val submitMenuItem = menu?.findItem(R.id.submit)
 
 
-        val editTextFocusListener = InputFocusUtilities.getUpdateMenuIfEditingListener(submitMenuItem, deleteMenuItem, shareMenuItem)
+        val editTextFocusListener = InputFocusUtilities.getUpdateMenuIfEditingListener(submitMenuItem, deleteMenuItem,
+            shareMenuItem, favMenuItem)
 
         // Changing toolbar button visibility if focused
         binding.titleEditText.onFocusChangeListener = editTextFocusListener
         binding.contentTextInput.onFocusChangeListener = editTextFocusListener
+
+        setFavMenuItemIcon(favMenuItem, viewModel.noteFavState.value!!)
+
+        // Observe for favorite state changes
+        viewModel.noteFavState.observe(this, Observer { favState ->
+            setFavMenuItemIcon(favMenuItem, favState)
+        })
 
         // After views have been initialized, if the note is new then focus title field and show keyboard
         if (viewModel.isNoteNew){

@@ -56,6 +56,7 @@ class NotesActivity : AppCompatActivity() {
                 else -> false
             }
         }
+
     }
 
     fun refreshNotesList(){

@@ -20,12 +20,16 @@ class EditorViewModel: ViewModel() {
         "",
         Calendar.getInstance().time)
 
-
+    private val _noteFavState = MutableLiveData<Boolean>(false)
 
     // Getters to only expose required Note object properties
     val noteTitle get() = currentNote.title
     val noteContent get() = currentNote.content
     val isNoteNew get() = currentNote.noteId.isBlank()
+    val isCurrentNoteFav get() = currentNote.favorite
+
+
+    val noteFavState: LiveData<Boolean> get() = _noteFavState
 
     val updateNoteTitle = { title: String ->
         this.currentNote.title = title
@@ -47,11 +51,21 @@ class EditorViewModel: ViewModel() {
             currentNote = NotesUtility.noteFromString(intentNote)
         }
 
+        _noteFavState.postValue(currentNote.favorite)
+
         // Init timezone and locale
         this.locale = locale
         this.timeZone = timeZone
     }
 
+    fun toggleFavoriteNote(): Task<Void>{
+        val newFavState = !currentNote.favorite
+        return NoteRepository.favoriteNote(currentNote.noteId, newFavState)
+            .addOnSuccessListener {
+                currentNote.favorite = newFavState
+                _noteFavState.postValue(newFavState)
+            }
+    }
 
     // Function to save note state on firebase
     // If isEditing note then edit existing document on firebase by ID else create new document

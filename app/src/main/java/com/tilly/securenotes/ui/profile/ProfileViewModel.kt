@@ -14,15 +14,14 @@ import com.tilly.securenotes.data.repository.ProfileRepository
 class ProfileViewModel : ViewModel() {
     private val user: FirebaseUser = AuthRepository.getFirebaseUser()!!
 
+
     val userName: String get() = user.displayName!!
     val userEmail: String get() = user.email!!
     val userAvatar: Uri? get() = user.photoUrl
 
-    private val DEFAULT_IMG = "https://www.telegraph.co.uk/content/dam/technology/2021/01/28/Screenshot-2021-01-28-at-13-20-35_trans_NvBQzQNjv4BqgorLzNIuWKFjctv8STCiZsyL_iAq5T7dsR69ZpavGbo.png?imwidth=960"
+
 
     // Strings for edited username and email in text fields
-
-
     private val _profilePicUri = MutableLiveData<Uri?>()
     val profilePicUri: LiveData<Uri?> get() = _profilePicUri
 
