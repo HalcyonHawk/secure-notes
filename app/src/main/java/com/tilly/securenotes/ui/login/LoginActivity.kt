@@ -1,5 +1,6 @@
 package com.tilly.securenotes.ui.login
 
+import android.content.Context
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -7,6 +8,7 @@ import android.view.View
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.lifecycle.ViewModelProvider
+import com.tilly.securenotes.R
 import com.tilly.securenotes.ui.notes.NotesActivity
 import com.tilly.securenotes.databinding.ActivityLoginBinding
 import com.tilly.securenotes.ui.register.RegisterActivity
@@ -16,6 +18,11 @@ class LoginActivity : AppCompatActivity() {
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        val sharedPrefs = getPreferences(Context.MODE_PRIVATE)
+        val darkModeEnabled = sharedPrefs.getBoolean("darkMode", false)
+        if (darkModeEnabled){
+            applicationContext.setTheme(R.style.Theme_MaterialComponents_DayNight_NoActionBar)
+        }
         super.onCreate(savedInstanceState)
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)

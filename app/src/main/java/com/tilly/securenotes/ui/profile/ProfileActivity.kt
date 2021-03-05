@@ -1,5 +1,6 @@
 package com.tilly.securenotes.ui.profile
 
+import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.net.Uri
@@ -30,6 +31,13 @@ class ProfileActivity : AppCompatActivity(), BottomSheetImagePicker.OnImagesSele
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        val sharedPrefs = getPreferences(Context.MODE_PRIVATE)
+        //TODO: Dark mode
+        val darkModeEnabled = sharedPrefs.getBoolean("darkMode", false)
+        if (darkModeEnabled){
+            setTheme(R.style.Theme_MaterialComponents_DayNight_NoActionBar)
+        }
+
         super.onCreate(savedInstanceState)
         // Inflating activity layout using binding class to access views without findViewById()
         binding = ActivityProfileBinding.inflate(layoutInflater)
@@ -92,6 +100,16 @@ class ProfileActivity : AppCompatActivity(), BottomSheetImagePicker.OnImagesSele
 
         // Load profile pic
         viewModel.loadProfilePicture()
+
+        binding.toggleTheme.isChecked = darkModeEnabled
+
+        binding.toggleTheme.setOnCheckedChangeListener { buttonView, isChecked ->
+            with(sharedPrefs.edit()){
+                putBoolean("darkMode", isChecked)
+                apply()
+            }
+            applicationContext.setTheme(R.style.Theme_MaterialComponents_DayNight_NoActionBar)
+        }
     }
 
     fun goBackToLogin(){
