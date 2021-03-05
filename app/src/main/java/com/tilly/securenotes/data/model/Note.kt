@@ -1,17 +1,25 @@
 package com.tilly.securenotes.data.model
 
-import com.google.type.DateTime
 import java.util.*
 
+// Data class modeling a note object stored in the firebase database
 data class Note( var noteId: String,
     var title: String,
     var content: String,
     var lastEdited: Date
 ) {
-    // Overriding equals function for comparing if notes have been edited
+    // Overriding equals function for comparing if note objects are different
     override fun equals(other: Any?): Boolean {
         val newNote = other as Note
-        // TODO: Include lastediteddate in comparison?
         return this.title != newNote.title || this.content != newNote.content
+    }
+
+    // Overriding equals() requires hashCode() to be overriden too
+    override fun hashCode(): Int {
+        var result = noteId.hashCode()
+        result = 31 * result + title.hashCode()
+        result = 31 * result + content.hashCode()
+        result = 31 * result + lastEdited.hashCode()
+        return result
     }
 }
