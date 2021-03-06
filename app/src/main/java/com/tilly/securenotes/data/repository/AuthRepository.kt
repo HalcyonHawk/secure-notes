@@ -71,4 +71,9 @@ object AuthRepository {
     fun checkIfLoggedIn(): Boolean{
         return auth.currentUser != null
     }
+
+    fun resetPass(email: String): Task<Void> {
+        return auth.sendPasswordResetEmail(email)
+
+    }
 }

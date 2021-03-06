@@ -30,6 +30,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".ui.notes.NotesActivity" />
+        <activity android:name=".ui.reset_pass.ResetPassActivity" />
 
         <provider
             android:name="androidx.core.content.FileProvider"

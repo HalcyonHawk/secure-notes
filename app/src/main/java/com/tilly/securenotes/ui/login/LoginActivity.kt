@@ -7,11 +7,11 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.activity.viewModels
-import androidx.lifecycle.ViewModelProvider
 import com.tilly.securenotes.R
 import com.tilly.securenotes.ui.notes.NotesActivity
 import com.tilly.securenotes.databinding.ActivityLoginBinding
 import com.tilly.securenotes.ui.register.RegisterActivity
+import com.tilly.securenotes.ui.reset_pass.ResetPassActivity
 
 class LoginActivity : AppCompatActivity() {
     private lateinit var binding: ActivityLoginBinding
@@ -51,11 +51,15 @@ class LoginActivity : AppCompatActivity() {
         binding.createAccount.setOnClickListener {
             startActivity(Intent(this, RegisterActivity::class.java))
         }
+
+        binding.resetPassLink.setOnClickListener {
+            startActivity(Intent(this, ResetPassActivity::class.java))
+        }
     }
 
     override fun onStart() {
         super.onStart()
-        val viewModel: LoginViewModel by viewModels()
+        val viewModel: ResetPassViewModel by viewModels()
 
         // Check if user already logged in
         if(viewModel.isUserLoggedIn()){
