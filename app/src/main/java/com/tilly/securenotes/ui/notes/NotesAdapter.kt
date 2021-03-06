@@ -33,9 +33,11 @@ class NotesAdapter(initNoteList: ArrayList<Note>) :
 
     }
 
+    var isFilterAscending: Boolean = false
+
     fun filterNotes(filterText: String){
         val filteredNotes = fullNoteList.filter { it.title.contains(filterText, ignoreCase = true)}
-        updateDisplayedNotes(ArrayList(filteredNotes))
+        sortNotesLastEdited(ArrayList(filteredNotes))
     }
 
 
@@ -115,26 +117,47 @@ class NotesAdapter(initNoteList: ArrayList<Note>) :
     }
 
     // Update full list
-    fun updateNotes(newList: ArrayList<Note>){
+    fun updateFullNotesList(newList: ArrayList<Note>){
         fullNoteList.clear()
         fullNoteList.addAll(newList)
 
-        updateDisplayedNotes(fullNoteList)
+        sortNotesLastEdited(fullNoteList)
     }
 
-    // Update displayed notes list and sort by last edited date and favorite status
-    fun updateDisplayedNotes(newList: ArrayList<Note>) {
+    private fun setDisplayedNotes(newList: ArrayList<Note>){
         displayedNoteList.clear()
         displayedNoteList.addAll(newList)
-        // Sort notes by last edited date
-        displayedNoteList.sortBy { it.lastEdited }
-        displayedNoteList.sortBy { it.favorite }
+    }
 
+    fun sortNotesAlphabetically(){
+        // Toggle sorting direction each call using isFilterDescending boolean
+        val sortedNotes = if(isFilterAscending){
+            isFilterAscending = false
+            displayedNoteList.sortedWith(compareByDescending<Note>{ it.title }.thenBy { it.favorite })
+        } else {
+            isFilterAscending = true
+            displayedNoteList.sortedWith(compareBy(Note::title, Note::favorite))
+        }
+
+        // Updating displayed notes with sorted ones
+        setDisplayedNotes(ArrayList(sortedNotes))
+
+        notifyDataSetChanged()
+    }
+
+
+    // Update displayed notes list and sort by last edited date and favorite status
+    fun sortNotesLastEdited(newList: ArrayList<Note>) {
+        setDisplayedNotes(newList)
+
+        // Sort notes by last edited date
+        displayedNoteList.sortByDescending { it.lastEdited }
+        displayedNoteList.sortBy { it.favorite }
 
         notifyDataSetChanged()
     }
 
     fun resetNotes() {
-        updateDisplayedNotes(fullNoteList)
+        sortNotesLastEdited(fullNoteList)
     }
 }

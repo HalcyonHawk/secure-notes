@@ -8,7 +8,6 @@ import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.core.widget.doOnTextChanged
 import androidx.lifecycle.Observer
-import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.tilly.securenotes.R
 import com.tilly.securenotes.data.model.ResultStatusWrapper
@@ -71,13 +70,17 @@ class NotesActivity : AppCompatActivity() {
             }
         }
 
+        binding.sortButton.setOnClickListener {
+            notesAdapter.sortNotesAlphabetically()
+        }
+
         viewModel.notesList.observe(this, Observer {notes ->
             // Set adapter for autocomplete search box with newly loaded notes
             val searchAdapter = ArrayAdapter<String>(this, android.R.layout.simple_dropdown_item_1line,
                 notes.map { it.title })
             binding.searchBox.setAdapter(searchAdapter)
 
-            notesAdapter.updateNotes(notes)
+            notesAdapter.updateFullNotesList(notes)
         })
 
         refreshNotesList()
