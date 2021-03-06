@@ -9,7 +9,6 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.daimajia.swipe.SwipeLayout
-import com.squareup.picasso.Picasso
 import com.tilly.securenotes.R
 import com.tilly.securenotes.data.model.Note
 import com.tilly.securenotes.data.repository.NoteRepository
@@ -17,14 +16,28 @@ import com.tilly.securenotes.databinding.NoteItemBinding
 import com.tilly.securenotes.ui.editor.EditorActivity
 import com.tilly.securenotes.utilities.NotesUtility
 
-class NotesAdapter(val noteList: ArrayList<Note>) :
+class NotesAdapter(initNoteList: ArrayList<Note>) :
     RecyclerView.Adapter<NotesAdapter.NoteViewHolder>() {
+
+    val fullNoteList = arrayListOf<Note>()
+    val displayedNoteList = arrayListOf<Note>()
+
+    init {
+        fullNoteList.addAll(fullNoteList)
+        displayedNoteList.addAll(initNoteList)
+    }
 
     class NoteViewHolder(val binding: NoteItemBinding) : RecyclerView.ViewHolder(binding.root) {
         val titleText: TextView = binding.noteTitle
         val openNoteButton: ImageButton = binding.openNote
 
     }
+
+    fun filterNotes(filterText: String){
+        val filteredNotes = fullNoteList.filter { it.title.contains(filterText, ignoreCase = true)}
+        updateDisplayedNotes(ArrayList(filteredNotes))
+    }
+
 
     // Create note list item view holders and initialise views
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NoteViewHolder {
@@ -34,12 +47,12 @@ class NotesAdapter(val noteList: ArrayList<Note>) :
 
     // Get number of notes
     override fun getItemCount(): Int {
-        return noteList.size
+        return displayedNoteList.size
     }
 
     // Set note view title text and button click
     override fun onBindViewHolder(holder: NoteViewHolder, position: Int) {
-        val note = noteList.get(position)
+        val note = displayedNoteList.get(position)
         holder.titleText.setText(note.title)
 
         // If note is favorite then set yellow star icon to visable
@@ -68,7 +81,7 @@ class NotesAdapter(val noteList: ArrayList<Note>) :
             NoteRepository.deleteNote(note.noteId).addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     // If note removed on firebase then remove from displayed list and notify adapter about update
-                    noteList.removeIf { item -> item.noteId == note.noteId }
+                    displayedNoteList.removeIf { item -> item.noteId == note.noteId }
                     notifyDataSetChanged()
                 } else {
                     Toast.makeText(it.context, "Failed to delete note.", Toast.LENGTH_SHORT).show()
@@ -90,7 +103,7 @@ class NotesAdapter(val noteList: ArrayList<Note>) :
                     note.favorite = newFavState
                     holder.binding.noteRoot.close(true)
 
-                    noteList.first { it.noteId == note.noteId }.favorite = newFavState
+                    displayedNoteList.first { it.noteId == note.noteId }.favorite = newFavState
                     notifyDataSetChanged()
                 }
                 .addOnFailureListener {
@@ -101,15 +114,27 @@ class NotesAdapter(val noteList: ArrayList<Note>) :
         }
     }
 
+    // Update full list
+    fun updateNotes(newList: ArrayList<Note>){
+        fullNoteList.clear()
+        fullNoteList.addAll(newList)
+
+        updateDisplayedNotes(fullNoteList)
+    }
+
     // Update displayed notes list and sort by last edited date and favorite status
-    fun updateNotes(newList: ArrayList<Note>) {
-        noteList.clear()
-        noteList.addAll(newList)
+    fun updateDisplayedNotes(newList: ArrayList<Note>) {
+        displayedNoteList.clear()
+        displayedNoteList.addAll(newList)
         // Sort notes by last edited date
-        noteList.sortBy { it.lastEdited }
-        noteList.sortBy { it.favorite }
+        displayedNoteList.sortBy { it.lastEdited }
+        displayedNoteList.sortBy { it.favorite }
 
 
         notifyDataSetChanged()
+    }
+
+    fun resetNotes() {
+        updateDisplayedNotes(fullNoteList)
     }
 }

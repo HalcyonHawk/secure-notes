@@ -3,8 +3,10 @@ package com.tilly.securenotes.ui.notes
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.activity.viewModels
+import androidx.core.widget.doOnTextChanged
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -34,11 +36,13 @@ class NotesActivity : AppCompatActivity() {
         binding.notesList.layoutManager = LinearLayoutManager(this)
 
 
-        viewModel.notesList.observe(this, Observer { notes ->
-            notesAdapter.updateNotes(notes)
-        })
 
-        refreshNotesList()
+
+//        viewModel.notesList.observe(this, Observer { notes ->
+//            notesAdapter.updateNotes(notes)
+//        })
+
+
 
         binding.topAppBar.setOnMenuItemClickListener { menuItem ->
             when(menuItem.itemId){
@@ -56,6 +60,27 @@ class NotesActivity : AppCompatActivity() {
                 else -> false
             }
         }
+
+        binding.searchBox.doOnTextChanged { text, start, before, count ->
+            if (text.isNullOrEmpty()){
+//                refreshNotesList()
+                notesAdapter.resetNotes()
+            } else {
+                notesAdapter.filterNotes(text.toString())
+
+            }
+        }
+
+        viewModel.notesList.observe(this, Observer {notes ->
+            // Set adapter for autocomplete search box with newly loaded notes
+            val searchAdapter = ArrayAdapter<String>(this, android.R.layout.simple_dropdown_item_1line,
+                notes.map { it.title })
+            binding.searchBox.setAdapter(searchAdapter)
+
+            notesAdapter.updateNotes(notes)
+        })
+
+        refreshNotesList()
 
     }
 
@@ -82,6 +107,8 @@ class NotesActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         val viewModel: NotesViewModel by viewModels()
+        // Clear search box after returning to notes activity
+        binding.searchBox.text.clear()
         viewModel.loadNotes()
     }
 
