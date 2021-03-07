@@ -151,7 +151,7 @@ class ProfileViewModel : ViewModel() {
         }
             .addOnFailureListener {
                 _profilePicUri.postValue(null)
-                Log.e("firebase", "loadProfilePicture: failed to load profile pic", it)
+                Log.w("firebase", "loadProfilePicture: failed to load profile pic, setting to null", it)
             }
     }
 

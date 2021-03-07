@@ -2,13 +2,11 @@ package com.tilly.securenotes.data.repository
 
 
 import android.util.Log
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.google.android.gms.tasks.Task
-import com.google.firebase.auth.AuthResult
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.auth.UserProfileChangeRequest
+import com.google.firebase.auth.*
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.auth.ktx.userProfileChangeRequest
 import com.google.firebase.ktx.Firebase
@@ -16,6 +14,8 @@ import com.google.firebase.ktx.Firebase
 // AuthRepository object providing access to all authentication related data sources i.e Firebase Authentication
 object AuthRepository {
     private var auth: FirebaseAuth = Firebase.auth
+
+
 
     // Getter for to access FirebaseAuth object
     fun getFirebaseAuth(): FirebaseAuth{

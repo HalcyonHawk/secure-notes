@@ -1,11 +1,13 @@
 package com.tilly.securenotes.utilities
 
 
+import android.content.Context
 import android.content.Intent
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import com.google.gson.Gson
 import com.tilly.securenotes.data.model.Note
+import com.tilly.securenotes.ui.login.LoginActivity
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -61,5 +63,13 @@ object NotesUtility {
         }
 
         return Intent.createChooser(sendIntent, null)
+    }
+
+    fun createGoToLoginIntent(context: Context): Intent{
+        val i = Intent(context, LoginActivity::class.java)
+        i.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                Intent.FLAG_ACTIVITY_CLEAR_TASK or
+                Intent.FLAG_ACTIVITY_NEW_TASK
+        return i
     }
 }

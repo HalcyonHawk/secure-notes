@@ -148,26 +148,6 @@
                 app:layout_constraintEnd_toEndOf="@id/confirm_new_password"
                 app:layout_constraintBottom_toBottomOf="parent"/>
 
-            <TextView
-                android:id="@+id/theme_mode_text"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Light Mode/Dark Mode"
-                android:textSize="16sp"
-                app:layout_constraintTop_toBottomOf="@id/submit_pass"
-                app:layout_constraintStart_toStartOf="@id/submit_pass"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintVertical_bias="0.1"/>
-
-            <ToggleButton
-                android:id="@+id/toggle_theme"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:layout_constraintStart_toEndOf="@id/theme_mode_text"
-                app:layout_constraintTop_toTopOf="@id/theme_mode_text"
-                app:layout_constraintBottom_toBottomOf="@id/theme_mode_text"
-                app:layout_constraintEnd_toEndOf="@id/submit_pass"/>
-
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>

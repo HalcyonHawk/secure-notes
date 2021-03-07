@@ -3,6 +3,7 @@ package com.tilly.securenotes.ui.register
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
 import androidx.activity.viewModels
@@ -18,7 +19,10 @@ class RegisterActivity : AppCompatActivity() {
         binding = ActivityRegisterBinding.inflate(layoutInflater)
         setContentView(binding.root)
         val viewModel: RegisterViewModel by viewModels()
-
+        
+        setSupportActionBar(binding.topAppBar)
+        supportActionBar?.setDisplayShowHomeEnabled(true)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         binding.register.setOnClickListener {
             // If password confirmation correct then register user else show error
@@ -50,6 +54,16 @@ class RegisterActivity : AppCompatActivity() {
             } else {
                 Toast.makeText(this, "Passwords don't match, try again.", Toast.LENGTH_SHORT).show()
             }
+        }
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            android.R.id.home -> {
+                finish()
+                true
+            }
+            else -> false
         }
     }
 }

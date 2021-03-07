@@ -10,6 +10,7 @@ import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.tilly.securenotes.data.model.ResultStatusWrapper
 import com.tilly.securenotes.data.model.Note
+import com.tilly.securenotes.utilities.NotesUtility
 import kotlin.collections.ArrayList
 
 object NoteRepository {
@@ -30,24 +31,26 @@ object NoteRepository {
     //TODO: Change to new ResultStatusWrapper
     fun loadNotes(): LiveData<ResultStatusWrapper<ArrayList<Note>>> {
         val liveDataWrapper: MutableLiveData<ResultStatusWrapper<ArrayList<Note>>> = MutableLiveData()
-        firestore.collection(NOTES_COLLECTION)
-            .whereEqualTo("user_id", auth.currentUser!!.uid)
-            .get()
-            .addOnSuccessListener {result ->
-                val noteList = arrayListOf<Note>()
-                for(document in result){
-                    noteList.add(Note(noteId = document.id,
-                        title = document.getString("title")!!,
-                        content = document.getString("content")!!,
-                        lastEdited = document.getDate("last_edited_date")!!,
-                        favorite = document.getBoolean("is_favorite")!!))
+        if (auth.currentUser != null){
+            firestore.collection(NOTES_COLLECTION)
+                .whereEqualTo("user_id", auth.currentUser!!.uid)
+                .get()
+                .addOnSuccessListener {result ->
+                    val noteList = arrayListOf<Note>()
+                    for(document in result){
+                        noteList.add(Note(noteId = document.id,
+                            title = document.getString("title")!!,
+                            content = document.getString("content")!!,
+                            lastEdited = document.getDate("last_edited_date")!!,
+                            favorite = document.getBoolean("is_favorite")!!))
+                    }
+                    // Post successful response with note list
+                    liveDataWrapper.postValue(ResultStatusWrapper.Success(noteList))
                 }
-                // Post successful response with note list
-                liveDataWrapper.postValue(ResultStatusWrapper.Success(noteList))
-            }
-            .addOnFailureListener{ exception ->
-                liveDataWrapper.postValue(ResultStatusWrapper.Error(null, exception))
-            }
+                .addOnFailureListener{ exception ->
+                    liveDataWrapper.postValue(ResultStatusWrapper.Error(null, exception))
+                }
+        }
         return liveDataWrapper
     }
 

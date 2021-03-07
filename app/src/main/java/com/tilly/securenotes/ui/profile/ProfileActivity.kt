@@ -22,6 +22,7 @@ import com.tilly.securenotes.databinding.ActivityProfileBinding
 import com.tilly.securenotes.ui.login.LoginActivity
 import com.tilly.securenotes.ui.reset_pass.ResetPassActivity
 import com.tilly.securenotes.utilities.InputFocusUtilities
+import com.tilly.securenotes.utilities.NotesUtility
 import com.tilly.securenotes.utilities.NotesUtility.observeOnce
 
 class ProfileActivity : AppCompatActivity(), BottomSheetImagePicker.OnImagesSelectedListener {
@@ -99,24 +100,10 @@ class ProfileActivity : AppCompatActivity(), BottomSheetImagePicker.OnImagesSele
 
         // Load profile pic
         viewModel.loadProfilePicture()
-
-        binding.toggleTheme.isChecked = darkModeEnabled
-
-        binding.toggleTheme.setOnCheckedChangeListener { buttonView, isChecked ->
-            with(sharedPrefs.edit()){
-                putBoolean("darkMode", isChecked)
-                apply()
-            }
-            applicationContext.setTheme(R.style.Theme_MaterialComponents_DayNight_NoActionBar)
-        }
     }
 
-    fun goBackToLogin(){
-        val i = Intent(this, LoginActivity::class.java)
-        i.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or
-                Intent.FLAG_ACTIVITY_CLEAR_TASK or
-                Intent.FLAG_ACTIVITY_NEW_TASK
-        startActivity(i)
+    private fun goBackToLogin(){
+        startActivity(NotesUtility.createGoToLoginIntent(this.baseContext))
     }
     override fun onImagesSelected(uris: List<Uri>, tag: String?) {
         viewModel.updateProfilePicture(uris.first().normalizeScheme())
