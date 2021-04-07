@@ -1,4 +1,4 @@
-package com.tilly.securenotes.data.model
+package com.tilly.securenotes.data
 
 import java.util.*
 
@@ -7,20 +7,21 @@ data class Note( var noteId: String,
     var title: String,
     var content: String,
     var lastEdited: Date,
-    var favorite: Boolean = false
+    var favourite: Boolean = false
 ) {
     // Overriding equals function for comparing if note objects are different
     override fun equals(other: Any?): Boolean {
         val newNote = other as Note
+        // Comparing notes by title and content
         return this.title != newNote.title || this.content != newNote.content
     }
 
     // Overriding equals() requires hashCode() to be overriden too
     override fun hashCode(): Int {
         var result = noteId.hashCode()
-        result = 31 * result + title.hashCode()
-        result = 31 * result + content.hashCode()
-        result = 31 * result + lastEdited.hashCode()
+        result += title.hashCode()
+        result += content.hashCode()
+        result += lastEdited.hashCode()
         return result
     }
 }

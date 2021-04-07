@@ -25,12 +25,13 @@ import com.tilly.securenotes.ui.notes.NotesActivity
 import com.tilly.securenotes.ui.register.RegisterActivity
 import com.tilly.securenotes.ui.reset_pass.ResetPassActivity
 
-
+// Activity for login screen, allows user to go to registration page or login using existing account or google account
 class LoginActivity : AppCompatActivity() {
     private lateinit var binding: ActivityLoginBinding
     private lateinit var mGoogleSignInClient: GoogleSignInClient
 
-    val RC_SIGN_IN = 4
+    // Request code for handling result of signing in using Google account
+    private val RC_SIGN_IN = 4
 
     // Init firebase auth in activity for google login
     private lateinit var auth: FirebaseAuth
@@ -52,81 +53,82 @@ class LoginActivity : AppCompatActivity() {
         // Build a GoogleSignInClient with the options specified by gso.
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
 
-
-
-
-        // Start login and show loadingbar
+        // Start login and show loadingbar when login button is pressed
         binding.login.setOnClickListener {
             binding.loading.visibility = View.VISIBLE
+            // Login user with provided credentials and handle result of login
             viewModel.loginWithEmail(
                 binding.username.text.toString(),
                 binding.password.text.toString()
-            )
-                .addOnCompleteListener { task ->
-                    binding.loading.visibility = View.GONE
+            ).addOnCompleteListener { task ->
+                binding.loading.visibility = View.GONE
 
-                    if (task.isSuccessful) {
-                        val intent = Intent(this, NotesActivity::class.java)
-                        startActivity(intent)
-                    } else {
-                        Toast.makeText(this, "Login failed, try again", Toast.LENGTH_SHORT)
-                            .show()
-                    }
-
+                // If login was successful then start notes activity otherwise show error message
+                if (task.isSuccessful) {
+                    val intent = Intent(this, NotesActivity::class.java)
+                    startActivity(intent)
+                } else {
+                    Toast.makeText(this, "Login failed, try again", Toast.LENGTH_SHORT)
+                        .show()
                 }
+            }
         }
 
+        // Setting button size and click listener for sign in with Google account button
         binding.googleLogin.setSize(SignInButton.SIZE_STANDARD)
         binding.googleLogin.setOnClickListener {
             val signInIntent = mGoogleSignInClient.signInIntent
             startActivityForResult(signInIntent, RC_SIGN_IN)
         }
 
+        // Starting account registration activity when create account button is pressed
         binding.createAccount.setOnClickListener {
             startActivity(Intent(this, RegisterActivity::class.java))
         }
 
+        // Starting reset password activity when reset password button is pressed
         binding.resetPassLink.setOnClickListener {
             startActivity(Intent(this, ResetPassActivity::class.java))
         }
     }
 
+    // Handle result of signing in using Google account
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        // Result returned from launching the Intent from GoogleSignInApi.getSignInIntent(...);
         if (requestCode == RC_SIGN_IN) {
+            // Log in user if successful, show error message if not
             GoogleSignIn.getSignedInAccountFromIntent(data)
                 .addOnSuccessListener {
                     googleSignIn(it.idToken!!)
                 }
                 .addOnFailureListener {
                     Log.w("Firebase", "Google sign in failed", it)
-                    Snackbar.make(
-                        binding.root,
+                    Toast.makeText(
+                        baseContext,
                         "Authentication Failed.",
-                        Snackbar.LENGTH_SHORT
+                        Toast.LENGTH_SHORT
                     ).show()
                 }
 
         }
     }
 
-    fun googleSignIn(token: String){
+    // Sign in user to firebase authentication using token from google account
+    private fun googleSignIn(token: String) {
         val viewModel: LoginViewModel by viewModels()
         viewModel.firebaseAuthWithGoogle(token)
+            // Handle result of signing in, if successful start notes activity, if not show error message
             .addOnCompleteListener(this) { task ->
                 if (task.isSuccessful) {
                     // Sign in success, update UI with the signed-in user's information
-                    Log.d("Firebase", "signInWithCredential:success")
                     val intent = Intent(this, NotesActivity::class.java)
                     startActivity(intent)
                 } else {
                     // If sign in fails, display a message to the user.
-                    Log.w("Firebase", "signInWithCredential:failure", task.exception)
-                    Snackbar.make(
-                        binding.root,
+                    Toast.makeText(
+                        baseContext,
                         "Authentication Failed.",
-                        Snackbar.LENGTH_SHORT
+                        Toast.LENGTH_SHORT
                     ).show()
                 }
             }
@@ -137,7 +139,8 @@ class LoginActivity : AppCompatActivity() {
         super.onStart()
         val viewModel: ResetPassViewModel by viewModels()
 
-        // Check if user already logged in
+        // Check if user already logged in when activity is started
+        // Prevents logged in users having to log in again
         if (viewModel.isUserLoggedIn()) {
             startActivity(Intent(this, NotesActivity::class.java))
         }

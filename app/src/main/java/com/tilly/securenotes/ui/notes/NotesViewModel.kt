@@ -1,43 +1,41 @@
 package com.tilly.securenotes.ui.notes
 
-import androidx.lifecycle.*
-import com.tilly.securenotes.data.model.ResultStatusWrapper
-import com.tilly.securenotes.data.model.Note
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import com.google.android.gms.tasks.Task
+import com.google.firebase.firestore.QuerySnapshot
+import com.tilly.securenotes.data.Note
 import com.tilly.securenotes.data.repository.NoteRepository
-import com.tilly.securenotes.utilities.NotesUtility.observeOnce
-import kotlin.collections.ArrayList
 
+// ViewModel for notes activity, holds a list of notes using live data and contains function to update
+// the notes from firebase.
 class NotesViewModel: ViewModel() {
 
     // Notes list live data to post updates to observers
     private val _notesList: MutableLiveData<ArrayList<Note>> = MutableLiveData(arrayListOf())
-    // Getter to only expose on-mutable live data object to view
+    // Getter to only expose unmutable live data object to view
     val notesList: LiveData<ArrayList<Note>> get() = _notesList
 
-
     // Load new notes into live data ArrayList  from firebase using repository if successful
-    // return firebase Task for error handling or success handling in view
-    fun loadNotes(): LiveData<ResultStatusWrapper<ArrayList<Note>>> {
-        val resultLiveData: MutableLiveData<ResultStatusWrapper<ArrayList<Note>>> = MutableLiveData()
+    // post new notes list to live data to update view
+    fun loadNotes(): Task<QuerySnapshot> {
         // Loading notes
-        // Using observeOnce extension function defined in NotesUtils to automatically remove observer after Observer.onChanged executed
-        NoteRepository.loadNotes().observeOnce(Observer { response ->
-            when(response){
-                // If response from firebase successful then post newly loaded note list into _notesList
-                is ResultStatusWrapper.Success -> {
-                    // Posting newly loaded list to observers
-                    _notesList.postValue(response.data)
-                    // Posting response success for handling in view
-                    resultLiveData.postValue(response)
+        return NoteRepository.loadNotes()
+            .addOnSuccessListener {result ->
+                // Converting notes documents from firestore database to list of Note objects
+                val noteList = arrayListOf<Note>()
+                for(document in result){
+                    noteList.add(
+                        Note(noteId = document.id,
+                        title = document.getString("title")!!,
+                        content = document.getString("content")!!,
+                        lastEdited = document.getDate("last_edited_date")!!,
+                        favourite = document.getBoolean("is_favourite")!!)
+                    )
                 }
-                // If response from firebase unsuccessful then post error for handling in view
-                is ResultStatusWrapper.Error -> {
-                    resultLiveData.postValue(response)
-                }
+                // Post successful response with note list
+                _notesList.postValue(noteList)
             }
-        })
-        return resultLiveData
     }
-
-
 }

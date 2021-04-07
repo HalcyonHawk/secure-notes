@@ -6,13 +6,13 @@ import android.content.Intent
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import com.google.gson.Gson
-import com.tilly.securenotes.data.model.Note
+import com.tilly.securenotes.data.Note
 import com.tilly.securenotes.ui.login.LoginActivity
 import java.text.SimpleDateFormat
 import java.util.*
 
 
-// Notes utility functions
+// Utility class with functions for handling notes objects
 object NotesUtility {
     // Creating instance of Gson to convert objects to JSON string
     private val gson = Gson()
@@ -23,7 +23,7 @@ object NotesUtility {
     }
 
     // Convert note in json form into note object
-    fun noteFromString(json: String): Note{
+    fun noteFromString(json: String): Note {
         return gson.fromJson(json, Note::class.java)
     }
 
@@ -65,6 +65,7 @@ object NotesUtility {
         return Intent.createChooser(sendIntent, null)
     }
 
+    // Create an intent that will close all activities and start the LoginActivity
     fun createGoToLoginIntent(context: Context): Intent{
         val i = Intent(context, LoginActivity::class.java)
         i.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or

@@ -9,22 +9,17 @@ import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.UploadTask
 import com.google.firebase.storage.ktx.storage
 
+// Repository object giving access to profile related data sources, i.e. cloud storage and firestore
 object ProfileRepository {
     private val firestore = Firebase.firestore
     private val storageRef = Firebase.storage.reference
 
-
-    // Users collection
-    private fun getUsersCollection(): CollectionReference {
-        return firestore.collection("users")
-    }
-
-    // Get current user ID
+    // Get current user ID of firebase auth user
     private fun getUserId(): String{
         return AuthRepository.getFirebaseAuth().uid!!
     }
 
-    // Delete user and return Task object to handle result
+    // Delete user and return Task to handle result in ViewModel or view
     fun deleteUser(): Task<Void> {
         return AuthRepository.getFirebaseUser()!!.delete()
     }
@@ -34,16 +29,12 @@ object ProfileRepository {
         return AuthRepository.getFirebaseUser()!!.updateEmail(newEmail)
     }
 
+    // Edit current user's username in firebase auth and return task for handling in view
     fun editUsername(newName: String): Task<Void>{
         val updateProfile = UserProfileChangeRequest.Builder()
             .setDisplayName(newName)
             .build()
         return AuthRepository.getFirebaseUser()!!.updateProfile(updateProfile)
-    }
-
-    // TODO: Change to send verification email
-    fun resetPassword(newPass: String): Task<Void>{
-        return AuthRepository.getFirebaseUser()!!.updatePassword(newPass)
     }
 
     // Update profile pic url on firebase auth account
@@ -53,11 +44,13 @@ object ProfileRepository {
         return AuthRepository.getFirebaseUser()!!.updateProfile(updateProfile)
     }
 
+    // Upload a profile picture from given URI to firebase cloud storage then return UploadTask object for handling
     fun uploadProfilePicture(uri: Uri): UploadTask{
         val profileImageRef = storageRef.child(getUserId())
         return profileImageRef.putFile(uri)
     }
 
+    // Get URI to currently set profile picture
     fun getProfilePictureURL(): Task<Uri> {
         val profileImageRef = storageRef.child(getUserId())
         return profileImageRef.downloadUrl

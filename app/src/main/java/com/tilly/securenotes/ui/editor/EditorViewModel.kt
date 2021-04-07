@@ -4,11 +4,12 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.android.gms.tasks.Task
-import com.tilly.securenotes.data.model.Note
+import com.tilly.securenotes.data.Note
 import com.tilly.securenotes.data.repository.NoteRepository
 import com.tilly.securenotes.utilities.NotesUtility
 import java.util.*
-
+// ViewModel for editor activity, stores details of currently edited note and contains functions for updating note
+// in the database.
 class EditorViewModel: ViewModel() {
     // Declare timezone and locale for formatting date and time
     private lateinit var locale: Locale
@@ -26,11 +27,12 @@ class EditorViewModel: ViewModel() {
     val noteTitle get() = currentNote.title
     val noteContent get() = currentNote.content
     val isNoteNew get() = currentNote.noteId.isBlank()
-    val isCurrentNoteFav get() = currentNote.favorite
+    val isCurrentNoteFav get() = currentNote.favourite
 
-
+    // LiveData representing favourite state of the note
     val noteFavState: LiveData<Boolean> get() = _noteFavState
 
+    // Setters for note title and content
     val updateNoteTitle = { title: String ->
         this.currentNote.title = title
     }
@@ -39,11 +41,7 @@ class EditorViewModel: ViewModel() {
         this.currentNote.content = content
     }
 
-    // Only exposing non-mutable LiveData to view using getter
-    private val _lastEditedTimeString: MutableLiveData<String> = MutableLiveData()
-    val lastEditedString: LiveData<String>
-        get() = _lastEditedTimeString
-
+    // Function initialising view model with the currently edited note or a new note if intentNote is null
     fun initViewModel(intentNote: String?, locale: Locale, timeZone: TimeZone){
         // Checking if note JSON string in intent exists, if so convert to note object and set to current note
         if (intentNote != null){
@@ -51,24 +49,26 @@ class EditorViewModel: ViewModel() {
             currentNote = NotesUtility.noteFromString(intentNote)
         }
 
-        _noteFavState.postValue(currentNote.favorite)
+        _noteFavState.postValue(currentNote.favourite)
 
-        // Init timezone and locale
+        // Init timezone and locale for formatting last edited date and time string
         this.locale = locale
         this.timeZone = timeZone
     }
 
-    fun toggleFavoriteNote(): Task<Void>{
-        val newFavState = !currentNote.favorite
-        return NoteRepository.favoriteNote(currentNote.noteId, newFavState)
+    // Toggle favourite state of the current note and update the database
+    fun toggleFavouriteNote(): Task<Void>{
+        val newFavState = !currentNote.favourite
+        return NoteRepository.favouriteNote(currentNote.noteId, newFavState)
             .addOnSuccessListener {
-                currentNote.favorite = newFavState
+                currentNote.favourite = newFavState
+                // Update livedata with new favourite state to update favourite icon
                 _noteFavState.postValue(newFavState)
             }
     }
 
     // Function to save note state on firebase
-    // If isEditing note then edit existing document on firebase by ID else create new document
+    // If editing existing note then edit it's document on firebase by ID or else create a new note document
     fun saveNote(): LiveData<Boolean> {
         val success = MutableLiveData<Boolean>()
         currentNote.lastEdited = Calendar.getInstance().time
@@ -94,13 +94,14 @@ class EditorViewModel: ViewModel() {
         return deleteNoteById(currentNote.noteId)
     }
 
+    // Delete a note from the database based on the passed note ID
     private fun deleteNoteById(id: String): Task<Void>{
         return NoteRepository.deleteNote(id)
     }
 
 
-    // Getting formatted time string for passed note
-    fun getFormattedDateString(date: Date): String{
+    // Getting formatted time string for passed date
+    private fun getFormattedDateString(date: Date): String{
         return NotesUtility.formatTimeString(date, locale, timeZone)
     }
 

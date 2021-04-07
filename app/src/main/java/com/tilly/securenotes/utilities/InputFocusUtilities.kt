@@ -2,15 +2,13 @@ package com.tilly.securenotes.utilities
 
 import android.app.Activity
 import android.content.Context
-import android.text.Editable
-import android.text.TextWatcher
 import android.view.MenuItem
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import java.lang.ref.WeakReference
 
-// Class for activities that track if a text field is focused
+// Utility class for activities that track if a text field is focused and handle focus changes
 object InputFocusUtilities {
     // Hide keyboard and unfocus view
     fun stopEditingText(context: Context, currentFocus: View?){
@@ -25,6 +23,8 @@ object InputFocusUtilities {
     }
 
 
+    // Change visibility of button for actions according to if a text view is focused or not
+    // Focused action is usually a submit button and is shown when a text box is being edited/has focus
     fun getUpdateMenuIfEditingListener(focusedAction: MenuItem?, vararg unfocusedAction: MenuItem?): View.OnFocusChangeListener {
         return object : View.OnFocusChangeListener {
             override fun onFocusChange(v: View?, hasFocus: Boolean) {
@@ -33,10 +33,10 @@ object InputFocusUtilities {
                     menuItem?.isVisible = !hasFocus
                 }
             }
-
         }
     }
 
+    // Set focus on passed text view and show keyboard. WeakReference to activity is used to not cause a memory leak due to this being a static class
     fun startEditingTextField(activity: WeakReference<Activity>, editTextView: EditText){
         editTextView.requestFocusFromTouch()
         val inputMethodManager = activity.get()?.getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager

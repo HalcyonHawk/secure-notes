@@ -14,26 +14,27 @@ import com.tilly.securenotes.data.repository.ProfileRepository
 class ProfileViewModel : ViewModel() {
     private val user: FirebaseUser = AuthRepository.getFirebaseUser()!!
 
-
     val userName: String get() = user.displayName!!
     val userEmail: String get() = user.email!!
-    val userAvatar: Uri? get() = user.photoUrl
-
-
 
     // Strings for edited username and email in text fields
     private val _profilePicUri = MutableLiveData<Uri?>()
     val profilePicUri: LiveData<Uri?> get() = _profilePicUri
 
+    // Log user out from the app
     fun logout() {
         AuthRepository.signOut()
     }
 
     // Commit changes and return if successful as boolean or null if no changes
     fun commitChangedUser(editedUsername: String, editedEmail: String): LiveData<Boolean?> {
+        // Returning temporary LiveData object to handle success/failure of editing user in firebase auth
         val successLiveData: MutableLiveData<Boolean> = MutableLiveData()
 
-        if (userName != editedUsername || user.email != editedEmail){
+        // Checking which fields need updating in firebase auth based on if the new values match the old values
+        // then making appropriate changes to firebase auth and returning boolean to function result depending
+        // on if the change was successful or not
+        if (userName != editedUsername || user.email != editedEmail) {
             // NAME AND EMAIL NEED UPDATE
             if (userName != editedUsername && userEmail != editedEmail) {
                 // Edit username, if successful then edit email and post success response
@@ -57,8 +58,9 @@ class ProfileViewModel : ViewModel() {
                 ProfileRepository.editUsername(editedUsername)
                     .addOnSuccessListener { successLiveData.postValue(true) }
                     .addOnFailureListener {
-                        Log.e("firebase", "commitChangedUser: failed to update name", it )
-                        successLiveData.postValue(false) }
+                        Log.e("firebase", "commitChangedUser: failed to update name", it)
+                        successLiveData.postValue(false)
+                    }
             }
         }
         // NO CHANGE
@@ -69,111 +71,68 @@ class ProfileViewModel : ViewModel() {
         return successLiveData
     }
 
-    fun changePassword(pass: String): LiveData<Boolean>{
-        val passChanged: MutableLiveData<Boolean> = MutableLiveData()
-        user.updatePassword(pass)
+    // Change password and return task to view for result handling
+    fun changePassword(pass: String): Task<Void> {
+        return user.updatePassword(pass)
+    }
+
+    // Upload profile picture and load new picture if successful, log exception on failure
+    fun updateProfilePicture(uri: Uri) {
+        ProfileRepository.uploadProfilePicture(uri)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    passChanged.postValue(true)
+                    updateNewPicInAuth()
                 } else {
-                    Log.e("firebase", "Pass changed failed", task.exception)
-                    passChanged.postValue(false)
-                }
-
-            }
-        return passChanged
-    }
-
-    // Get current user from firestore and alert the profile activity
-    fun initCurrentUser() {
-
-//        val userFindStatus = MutableLiveData<Boolean>()
-//        NoteRepository.getCurrentUser().observeOnce(Observer { result ->
-//            // Check if get user result is successful
-//            if (result is ResultStatusWrapper.Success) {
-//                // If successful then set initial user obj and post if user is found to observer in activity for handling
-//                // If no profile url on firebase user then set to default img
-//                val userImg = AuthRepository.getFirebaseUser()!!.photoUrl?.toString() ?: DEFAULT_IMG
-//
-//                // TODO: Change avatar in user class to Uri type
-//                user = User(
-//                    dbUserId = AuthRepository.getFirebaseAuth().uid,
-//                    email = result.data.email,
-//                    name = result.data.name,
-//                    avatar = userImg
-//                )
-//                userFindStatus.postValue(true)
-//            } else if (result is ResultStatusWrapper.Error) {
-//                // Handle error response
-//                if (result.exception is NoSuchElementException) {
-//                    // If user not found then log and post result for handling in activity
-//                    Log.e("firebase", "User not found", result.exception)
-//                    userFindStatus.postValue(false)
-//                } else {
-//                    // If any other exception found, post result to activity and log
-//                    Log.e("firebase", result.message, result.exception)
-//                    userFindStatus.postValue(false)
-//                }
-//            }
-//        })
-//        return userFindStatus
-    }
-
-    // Upload pic and return uri on success or null on error
-    fun updateProfilePicture(uri: Uri){
-        ProfileRepository.uploadProfilePicture(uri)
-            .addOnFailureListener {
-                Log.e("firebase", "updateProfilePicture: Failure", it)
-            }
-            .addOnCompleteListener{task ->
-                if (task.isSuccessful){
-
-                    loadNewProfilePicture()
-                } else {
-                    Log.e("firebase", "updateProfilePicture: ", task.exception)
+                    Log.e("firebase", "Failed to update profile picture", task.exception)
                 }
             }
     }
 
+    // Delete user from firebase authentication and return task for handling in view
     fun deleteUser(): Task<Void> {
-
         return ProfileRepository.deleteUser()
             .addOnFailureListener {
-                Log.e("firebase", "delete user: failed to delete user", it)
+                // Log exception if failed to delete user from firebase
+                Log.e("firebase", "Failed to delete user", it)
             }
     }
 
-    fun loadProfilePicture(){
+    // Load new profile picture from URL in firebase auth into LiveData to update in view
+    fun loadProfilePicture() {
         ProfileRepository.getProfilePictureURL()
             .addOnSuccessListener { uri ->
                 _profilePicUri.postValue(uri)
-
-        }
+            }
             .addOnFailureListener {
                 _profilePicUri.postValue(null)
-                Log.w("firebase", "loadProfilePicture: failed to load profile pic, setting to null", it)
             }
     }
 
-
-    private fun loadNewProfilePicture(){
-        ProfileRepository.getProfilePictureURL().addOnSuccessListener {uri ->
+    // Load a newly set profile picture
+    // Getting profile picture URI from firebase cloud storage then submit changed URI to firebase auth account
+    private fun updateNewPicInAuth() {
+        ProfileRepository.getProfilePictureURL().addOnSuccessListener { uri ->
             ProfileRepository.updateProfilePicUrl(uri)
-                .addOnCompleteListener {task ->
-                    if (task.isSuccessful){
+                .addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
                         _profilePicUri.postValue(uri)
                     } else {
-                        Log.e("firebase", "loadNewProfilePicture: cant get update url", task.exception)
+                        Log.e(
+                            "firebase",
+                            "Cant get updated uri",
+                            task.exception
+                        )
                         _profilePicUri.postValue(null)
                     }
                 }
         }.addOnFailureListener {
-            Log.e("firebase", "loadNewProfilePicture: cant get dowload uri", it)
+            Log.e("firebase", "Cant get download uri", it)
             _profilePicUri.postValue(null)
         }
     }
 
-    fun registerAuthListener(listener: FirebaseAuth.AuthStateListener){
+    // Register listener to detect and respond to when user has been logged out
+    fun registerAuthListener(listener: FirebaseAuth.AuthStateListener) {
         AuthRepository.getFirebaseAuth().addAuthStateListener(listener)
     }
 }

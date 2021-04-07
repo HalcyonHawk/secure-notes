@@ -25,19 +25,19 @@ class EditorActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Create activity view from binding class
         binding = ActivityEditorBinding.inflate(layoutInflater)
         setContentView(binding.root)
         // Set custom toolbar view
         setSupportActionBar(binding.topAppBar)
-        // Hide toolbar title
+        // Hide toolbar title and show back button
         supportActionBar?.setDisplayShowTitleEnabled(false)
         supportActionBar?.setDisplayShowHomeEnabled(true)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        // Creating class level viewModel
+        // Creating class viewModel
         viewModel = ViewModelProvider(this).get(EditorViewModel::class.java)
 
-
-        // Getting note JSON from intent
+        // Getting note JSON from intent and initialising ViewModel with it
         val passedNote = intent.extras?.getString("note")
         viewModel.initViewModel(passedNote, resources.configuration.locales[0], TimeZone.getDefault())
 
@@ -46,6 +46,7 @@ class EditorActivity : AppCompatActivity() {
         binding.titleEditText.setText(viewModel.noteTitle)
         binding.dateEdited.text = viewModel.getThisNoteTimeString()
 
+        // Submit note changes after user is done editing them
         binding.titleEditText.doAfterTextChanged { editable ->
             viewModel.updateNoteTitle(editable.toString())
         }
@@ -53,25 +54,23 @@ class EditorActivity : AppCompatActivity() {
         binding.contentTextInput.doAfterTextChanged { editable ->
             viewModel.updateNoteContent(editable.toString())
         }
-
     }
 
     // Setting actions for toolbar buttons
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        // Getting viewModel instance
 
         return when(item.itemId){
-            R.id.favorite -> {
-                // Favorite note upon pressing button in toolbar
-                viewModel.toggleFavoriteNote()
+            R.id.favourite -> {
+                // Favourite note upon pressing button in toolbar
+                viewModel.toggleFavouriteNote()
                     .addOnFailureListener {
-                    Toast.makeText(this, "Failed to favorite note", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Failed to favourite note", Toast.LENGTH_SHORT).show()
                 }.addOnSuccessListener {
-                    // Show toast message depending on if note is favorited or unfavorited
+                    // Show toast message depending on if note is favourited or unfavourited
                     if(viewModel.isCurrentNoteFav)
-                        Toast.makeText(this, "Note favorited" , Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this, "Note favourited" , Toast.LENGTH_SHORT).show()
                     else
-                        Toast.makeText(this, "Note unfavorited" , Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this, "Note unfavourited" , Toast.LENGTH_SHORT).show()
                     }
                 true
             }
@@ -131,26 +130,29 @@ class EditorActivity : AppCompatActivity() {
 
     }
 
-    // Function to set correct favorite icon for toolbar button
-    fun setFavMenuItemIcon(menuItem: MenuItem?, favorite: Boolean){
-        // If current note is favorite then set toolbar button icon to appropriate drawable
-        if (favorite){
+    // Function to set correct favourite icon for toolbar button
+    private fun setFavMenuItemIcon(menuItem: MenuItem?, favourite: Boolean){
+        // If current note is favourite then set toolbar button icon to appropriate drawable
+        if (favourite){
             menuItem?.icon = ResourcesCompat.getDrawable(resources, R.drawable.ic_star_white_24dp, null)
         } else {
             menuItem?.icon = ResourcesCompat.getDrawable(resources, R.drawable.ic_star_border_white_24dp, null)
         }
     }
 
-    // Initialising toolbar buttons and observing if an edit text view is focused to change toolbar button visibility
+    // Initialising toolbar buttons and observing if an EditText view is focused to change toolbar button visibility
+    // Buttons like favourite button should only be shown when note is not being edited
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.editor_menu, menu)
 
-        val favMenuItem = menu?.findItem(R.id.favorite)
+        // Getting appropriate menu item references based on ID
+        val favMenuItem = menu?.findItem(R.id.favourite)
         val shareMenuItem = menu?.findItem(R.id.share)
         val deleteMenuItem = menu?.findItem(R.id.delete)
         val submitMenuItem = menu?.findItem(R.id.submit)
 
 
+        // Setting text focus listener on EditText view to handle changing button visibility
         val editTextFocusListener = InputFocusUtilities.getUpdateMenuIfEditingListener(submitMenuItem, deleteMenuItem,
             shareMenuItem, favMenuItem)
 
@@ -158,9 +160,10 @@ class EditorActivity : AppCompatActivity() {
         binding.titleEditText.onFocusChangeListener = editTextFocusListener
         binding.contentTextInput.onFocusChangeListener = editTextFocusListener
 
+        // Setting favourite menu button icon by favourite state of the note
         setFavMenuItemIcon(favMenuItem, viewModel.noteFavState.value!!)
 
-        // Observe for favorite state changes
+        // Observe for favourite state changes
         viewModel.noteFavState.observe(this, Observer { favState ->
             setFavMenuItemIcon(favMenuItem, favState)
         })
