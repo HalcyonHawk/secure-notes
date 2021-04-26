@@ -25,7 +25,7 @@ import com.tilly.securenotes.ui.notes.NotesActivity
 import com.tilly.securenotes.ui.register.RegisterActivity
 import com.tilly.securenotes.ui.reset_pass.ResetPassActivity
 
-// Activity for login screen, allows user to go to registration page or login using existing account or google account
+// Login screen - Allows user to login using existing account or google account
 class LoginActivity : AppCompatActivity() {
     private lateinit var binding: ActivityLoginBinding
     private lateinit var mGoogleSignInClient: GoogleSignInClient
@@ -51,7 +51,7 @@ class LoginActivity : AppCompatActivity() {
             .requestEmail()
             .build()
         // Build a GoogleSignInClient with the options specified by gso.
-        mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
+        mGoogleSignInClient = GoogleSignIn.getClient(this, gso)
 
         // Start login and show loadingbar when login button is pressed
         binding.login.setOnClickListener {
@@ -74,19 +74,19 @@ class LoginActivity : AppCompatActivity() {
             }
         }
 
-        // Setting button size and click listener for sign in with Google account button
+        // Set button size and click listener for sign in with Google account button
         binding.googleLogin.setSize(SignInButton.SIZE_STANDARD)
         binding.googleLogin.setOnClickListener {
             val signInIntent = mGoogleSignInClient.signInIntent
             startActivityForResult(signInIntent, RC_SIGN_IN)
         }
 
-        // Starting account registration activity when create account button is pressed
+        // Start account registration activity when create account button is pressed
         binding.createAccount.setOnClickListener {
             startActivity(Intent(this, RegisterActivity::class.java))
         }
 
-        // Starting reset password activity when reset password button is pressed
+        // Start reset password activity when reset password button is pressed
         binding.resetPassLink.setOnClickListener {
             startActivity(Intent(this, ResetPassActivity::class.java))
         }

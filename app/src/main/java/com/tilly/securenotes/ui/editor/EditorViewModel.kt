@@ -6,10 +6,9 @@ import androidx.lifecycle.ViewModel
 import com.google.android.gms.tasks.Task
 import com.tilly.securenotes.data.Note
 import com.tilly.securenotes.data.repository.NoteRepository
-import com.tilly.securenotes.utilities.NotesUtility
+import com.tilly.securenotes.utilities.NotesUtilities
 import java.util.*
-// ViewModel for editor activity, stores details of currently edited note and contains functions for updating note
-// in the database.
+// ViewModel for editor activity - Store details of note being edited and update note in database
 class EditorViewModel: ViewModel() {
     // Declare timezone and locale for formatting date and time
     private lateinit var locale: Locale
@@ -23,7 +22,7 @@ class EditorViewModel: ViewModel() {
 
     private val _noteFavState = MutableLiveData<Boolean>(false)
 
-    // Getters to only expose required Note object properties
+    // Get only the required Note object properties
     val noteTitle get() = currentNote.title
     val noteContent get() = currentNote.content
     val isNoteNew get() = currentNote.noteId.isBlank()
@@ -32,31 +31,31 @@ class EditorViewModel: ViewModel() {
     // LiveData representing favourite state of the note
     val noteFavState: LiveData<Boolean> get() = _noteFavState
 
-    // Setters for note title and content
+    // Set note title
     val updateNoteTitle = { title: String ->
         this.currentNote.title = title
     }
-
+    // Set note content
     val updateNoteContent = { content: String ->
         this.currentNote.content = content
     }
 
-    // Function initialising view model with the currently edited note or a new note if intentNote is null
+    // Initialise view model with the note being edited or a new note if intentNote is null
     fun initViewModel(intentNote: String?, locale: Locale, timeZone: TimeZone){
-        // Checking if note JSON string in intent exists, if so convert to note object and set to current note
+        // Check if note JSON string intent exists
         if (intentNote != null){
             // Convert note json string to note object
-            currentNote = NotesUtility.noteFromString(intentNote)
+            currentNote = NotesUtilities.noteFromString(intentNote)
         }
 
         _noteFavState.postValue(currentNote.favourite)
 
-        // Init timezone and locale for formatting last edited date and time string
+        // Initialise timezone and locale for formatting last edited date and time string
         this.locale = locale
         this.timeZone = timeZone
     }
 
-    // Toggle favourite state of the current note and update the database
+    // Toggle favourite state of the note and update the database
     fun toggleFavouriteNote(): Task<Void>{
         val newFavState = !currentNote.favourite
         return NoteRepository.favouriteNote(currentNote.noteId, newFavState)
@@ -67,16 +66,17 @@ class EditorViewModel: ViewModel() {
             }
     }
 
-    // Function to save note state on firebase
-    // If editing existing note then edit it's document on firebase by ID or else create a new note document
+    // Save note on firebase
     fun saveNote(): LiveData<Boolean> {
         val success = MutableLiveData<Boolean>()
         currentNote.lastEdited = Calendar.getInstance().time
+        // If document ID given, update existing note on firebase with given ID
         if (!isNoteNew){
             NoteRepository.editNoteOnFirebase(currentNote)
                 .addOnCompleteListener {
                     success.postValue(it.isSuccessful)
                 }
+        // Else create a new note document
         } else {
             NoteRepository.createNoteOnFirebase(currentNote)
                 .addOnSuccessListener { documentReference ->
@@ -89,23 +89,23 @@ class EditorViewModel: ViewModel() {
         return success
     }
 
-    // Deleting note and passing back resulting Task obj to set callback in view
+    // Delete note and return Task object to set callback in view
     fun deleteCurrentNote(): Task<Void> {
         return deleteNoteById(currentNote.noteId)
     }
 
-    // Delete a note from the database based on the passed note ID
+    // Delete a note from the database using note ID given
     private fun deleteNoteById(id: String): Task<Void>{
         return NoteRepository.deleteNote(id)
     }
 
 
-    // Getting formatted time string for passed date
+    // Get formatted time string for date given
     private fun getFormattedDateString(date: Date): String{
-        return NotesUtility.formatTimeString(date, locale, timeZone)
+        return NotesUtilities.formatTimeString(date, locale, timeZone)
     }
 
-    // Getting formatted time string for current note
+    // Get formatted time string for current note
     fun getThisNoteTimeString(): String{
         return getFormattedDateString(currentNote.lastEdited)
     }

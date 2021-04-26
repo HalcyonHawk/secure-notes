@@ -6,7 +6,7 @@ import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.GoogleAuthProvider
 import com.tilly.securenotes.data.repository.AuthRepository
 
-// ViewModel allowing user to sign in using app account or Google account through the AuthRepository object
+// Login ViewModel - Allows user to sign in using app account or Google account through the AuthRepository object
 class LoginViewModel: ViewModel() {
 
     // Sign in user using an email and password

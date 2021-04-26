@@ -14,7 +14,7 @@ import com.tilly.securenotes.data.Note
 import com.tilly.securenotes.data.repository.NoteRepository
 import com.tilly.securenotes.databinding.NoteItemBinding
 import com.tilly.securenotes.ui.editor.EditorActivity
-import com.tilly.securenotes.utilities.NotesUtility
+import com.tilly.securenotes.utilities.NotesUtilities
 
 // RecyclerView adapter for populating notes list in NotesActivity
 // Takes an initial list of notes to populate the recycler view with
@@ -22,11 +22,11 @@ class NotesAdapter(initNoteList: ArrayList<Note>) :
     RecyclerView.Adapter<NotesAdapter.NoteViewHolder>() {
 
     // Lists for storing full list of notes and displayed notes
-    // Using separate lists to enable note filtering
+    // Separate lists to allow notes to be filtered
     private val fullNoteList = arrayListOf<Note>()
     private val displayedNoteList = arrayListOf<Note>()
 
-    // When adapter is created add the initial list of notes to the full note list and displayed notes list
+    // When adapter is created, add the initial list of notes to the full note list and displayed notes list
     init {
         fullNoteList.addAll(fullNoteList)
         displayedNoteList.addAll(initNoteList)
@@ -38,13 +38,13 @@ class NotesAdapter(initNoteList: ArrayList<Note>) :
         val openNoteButton: ImageButton = binding.openNote
     }
 
-    // Boolean storing if alphabetical filter is ascending or descending
+    // Store if alphabetical filter is ascending or descending
     var isFilterAscending: Boolean = false
 
     // Function for filtering notes list by title using passed filter string
     fun filterNotes(filterText: String){
         val filteredNotes = fullNoteList.filter { it.title.contains(filterText, ignoreCase = true)}
-        // Alphabetically sorting remaining notes after filtering
+        // Sort remaining notes alphabetically
         sortNotesLastEdited(ArrayList(filteredNotes))
     }
 
@@ -63,10 +63,11 @@ class NotesAdapter(initNoteList: ArrayList<Note>) :
     // Set note view title text and button click listener
     override fun onBindViewHolder(holder: NoteViewHolder, position: Int) {
         val note = displayedNoteList.get(position)
-        holder.titleText.setText(note.title)
+        holder.titleText.text = note.title
 
-        // If note is favourite then set star icon to visible
+        // If note is favourite
         if (note.favourite) {
+            // Set star icon to visible
             holder.binding.favouritedIcon.visibility = View.VISIBLE
             // Update swipe favourite button drawable based on fav state
             holder.binding.favouriteNoteBtn.setImageResource(R.drawable.ic_star_white_24dp)
@@ -77,33 +78,36 @@ class NotesAdapter(initNoteList: ArrayList<Note>) :
 
         // Note button click should open the note editor with the note
         holder.openNoteButton.setOnClickListener {
-            // Starting note editing activity and passing note as JSON string in intent
+            // Start note editing activity with the note as a JSON string
             val intent = Intent(it.context, EditorActivity::class.java)
-            intent.putExtra("note", NotesUtility.noteToString(note))
+            intent.putExtra("note", NotesUtilities.noteToString(note))
             it.context.startActivity(intent)
         }
 
-        // Initialising note item swipe behavior to reveal hidden action buttons
+        // Initialise note item swipe behavior to reveal hidden action buttons
         holder.binding.noteRoot.showMode = SwipeLayout.ShowMode.LayDown
         holder.binding.noteRoot.addDrag(SwipeLayout.DragEdge.Right, holder.binding.itemMenu)
 
-        // Setting action for delete note button in hidden swipe menu
+        // Set action for delete note button in hidden swipe menu
         holder.binding.deleteNoteBtn.setOnClickListener {
             NoteRepository.deleteNote(note.noteId).addOnCompleteListener { task ->
-                // Handle result of deleting note from database, show error if failed or remove note from displayed notes list if successful
+                // Handle result of deleting note from database
                 if (task.isSuccessful) {
+                    // Remove note from displayed notes list if successful
                     // If note removed on firebase then remove from displayed list and notify adapter about update
                     displayedNoteList.removeIf { item -> item.noteId == note.noteId }
                     notifyDataSetChanged()
                 } else {
+                    // Show error if failed
                     Toast.makeText(it.context, "Failed to delete note.", Toast.LENGTH_SHORT).show()
                 }
             }
         }
 
-        // Clicking share button in swipe menu creates and launches intent to share note title and content with another app
+        // Pressing the share button in swipe menu creates and launches intent to
+        // share note title and content with another app
         holder.binding.shareNoteBtn.setOnClickListener {
-            it.context.startActivity(NotesUtility.createShareIntent(note.title, note.content))
+            it.context.startActivity(NotesUtilities.createShareIntent(note.title, note.content))
         }
 
         // Favourite note button toggles is_favourite field for note document in firestore database
@@ -141,7 +145,7 @@ class NotesAdapter(initNoteList: ArrayList<Note>) :
 
     // Sort displayed notes alphabetically based on if filter is ascending or descending
     fun sortNotesAlphabetically(){
-        // Toggle sorting direction each call using isFilterDescending boolean
+        // Toggle sorting direction
         val sortedNotes = if(isFilterAscending){
             isFilterAscending = false
             displayedNoteList.sortedWith(compareByDescending<Note>{ it.title }.thenBy { it.favourite })
@@ -150,7 +154,7 @@ class NotesAdapter(initNoteList: ArrayList<Note>) :
             displayedNoteList.sortedWith(compareBy(Note::title, Note::favourite))
         }
 
-        // Updating displayed notes with sorted ones
+        // Update displayed notes with sorted ones
         setDisplayedNotes(ArrayList(sortedNotes))
 
         // Update view with new displayed notes list

@@ -6,6 +6,7 @@ import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseAuth
 import com.tilly.securenotes.data.repository.AuthRepository
 
+// Viewmodel for reset pass activity
 class ResetPassViewModel: ViewModel() {
     fun requestPassReset(email: String): Task<Void>{
         return AuthRepository.resetPass(email)

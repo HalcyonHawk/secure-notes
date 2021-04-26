@@ -18,7 +18,7 @@
             android:layout_width="@dimen/swipe_menu_btn_width"
             android:layout_height="match_parent"
             android:background="@color/red_a700"
-            android:contentDescription="Delete note button"
+            android:contentDescription="@string/delete_note_button"
             android:foreground="?android:attr/selectableItemBackground"
             android:src="@drawable/ic_delete_white_24dp" />
 
@@ -28,7 +28,7 @@
             android:layout_height="match_parent"
             android:background="@color/primaryDarkColor"
             android:foreground="?android:attr/selectableItemBackground"
-            android:contentDescription="Share note button"
+            android:contentDescription="@string/share_note_button"
             android:src="@drawable/ic_ios_share_white_24dp" />
 
         <ImageButton
@@ -61,7 +61,7 @@
             android:paddingStart="16dp"
             android:visibility="gone"
             android:src="@drawable/ic_star_primary_24dp"
-            android:contentDescription="Note favorite state icon" />
+            android:contentDescription="@string/note_favorite_state_icon" />
         <TextView
             android:id="@+id/note_title"
             android:layout_width="0dp"

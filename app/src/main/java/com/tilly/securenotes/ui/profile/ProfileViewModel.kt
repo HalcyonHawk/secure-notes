@@ -11,6 +11,7 @@ import com.google.firebase.auth.FirebaseUser
 import com.tilly.securenotes.data.repository.AuthRepository
 import com.tilly.securenotes.data.repository.ProfileRepository
 
+// ViewModel for profile activity
 class ProfileViewModel : ViewModel() {
     private val user: FirebaseUser = AuthRepository.getFirebaseUser()!!
 
@@ -26,16 +27,16 @@ class ProfileViewModel : ViewModel() {
         AuthRepository.signOut()
     }
 
-    // Commit changes and return if successful as boolean or null if no changes
+    // Submit changes and return if successful as boolean or null if no changes
     fun commitChangedUser(editedUsername: String, editedEmail: String): LiveData<Boolean?> {
-        // Returning temporary LiveData object to handle success/failure of editing user in firebase auth
+        // Return temporary LiveData object to handle success/failure of editing user in firebase auth
         val successLiveData: MutableLiveData<Boolean> = MutableLiveData()
 
-        // Checking which fields need updating in firebase auth based on if the new values match the old values
-        // then making appropriate changes to firebase auth and returning boolean to function result depending
+        // Check which fields need updating in firebase auth based on. If the new values match
+        // the old values, then make changes to firebase auth and return boolean of result depending
         // on if the change was successful or not
         if (userName != editedUsername || user.email != editedEmail) {
-            // NAME AND EMAIL NEED UPDATE
+            // UPDATE NAME AND EMAIL
             if (userName != editedUsername && userEmail != editedEmail) {
                 // Edit username, if successful then edit email and post success response
                 ProfileRepository.editUsername(editedUsername)
@@ -47,13 +48,13 @@ class ProfileViewModel : ViewModel() {
                     .addOnFailureListener { successLiveData.postValue(false) }
             }
 
-            // EMAIL NEEDS UPDATE
+            // UPDATE EMAIL
             else if (user.email != editedEmail) {
                 ProfileRepository.editEmail(editedEmail)
                     .addOnSuccessListener { successLiveData.postValue(true) }
                     .addOnFailureListener { successLiveData.postValue(false) }
             }
-            // NAME NEEDS UPDATE
+            // UPDATE NAME
             else if (userName != editedUsername) {
                 ProfileRepository.editUsername(editedUsername)
                     .addOnSuccessListener { successLiveData.postValue(true) }
@@ -109,7 +110,7 @@ class ProfileViewModel : ViewModel() {
     }
 
     // Load a newly set profile picture
-    // Getting profile picture URI from firebase cloud storage then submit changed URI to firebase auth account
+    // Get profile picture URI from firebase cloud storage, then submit changed URI to firebase auth account
     private fun updateNewPicInAuth() {
         ProfileRepository.getProfilePictureURL().addOnSuccessListener { uri ->
             ProfileRepository.updateProfilePicUrl(uri)

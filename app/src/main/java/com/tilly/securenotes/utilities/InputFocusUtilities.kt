@@ -36,7 +36,8 @@ object InputFocusUtilities {
         }
     }
 
-    // Set focus on passed text view and show keyboard. WeakReference to activity is used to not cause a memory leak due to this being a static class
+    // Set focus on text view given and show keyboard.
+    // WeakReference to activity is used to prevent a memory leak due to this being a static class
     fun startEditingTextField(activity: WeakReference<Activity>, editTextView: EditText){
         editTextView.requestFocusFromTouch()
         val inputMethodManager = activity.get()?.getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager

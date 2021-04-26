@@ -6,7 +6,7 @@ import com.tilly.securenotes.data.repository.AuthRepository
 
 // Viewmodel for register activity
 class RegisterViewModel: ViewModel() {
-    // Function to register new account on firebase
+    // Register new account on firebase
     fun registerAccount(email: String,
                         password: String, displayName: String): LiveData<Boolean>{
         return AuthRepository.createAccount(email, password, displayName)

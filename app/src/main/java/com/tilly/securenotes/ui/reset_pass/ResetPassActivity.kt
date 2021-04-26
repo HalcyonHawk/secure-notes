@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.tilly.securenotes.databinding.ActivityResetPassBinding
 import com.tilly.securenotes.ui.login.ResetPassViewModel
 
+// Reset Password Screen - Allow user to reset their password
 class ResetPassActivity : AppCompatActivity() {
     private lateinit var binding: ActivityResetPassBinding
 
@@ -32,7 +33,7 @@ class ResetPassActivity : AppCompatActivity() {
             viewModel.requestPassReset(binding.userEmail.text.toString())
                 .addOnCompleteListener { task ->
                     binding.loading.visibility = View.GONE
-                    // Display message on password reset success or faliure
+                    // Display message on password reset success or failure
                     if (task.isSuccessful) {
                         Toast.makeText(
                             this,
@@ -47,10 +48,10 @@ class ResetPassActivity : AppCompatActivity() {
         }
     }
 
-    // Overriding options button functions
+    // Override options button functions
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
-            // Pressing back button finishes the activity
+            // Pressing the back button finishes the activity
             android.R.id.home -> {
                 finish()
                 true

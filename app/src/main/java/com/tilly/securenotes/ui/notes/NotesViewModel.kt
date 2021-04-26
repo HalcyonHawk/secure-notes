@@ -8,17 +8,17 @@ import com.google.firebase.firestore.QuerySnapshot
 import com.tilly.securenotes.data.Note
 import com.tilly.securenotes.data.repository.NoteRepository
 
-// ViewModel for notes activity, holds a list of notes using live data and contains function to update
-// the notes from firebase.
+// ViewModel for notes activity - Holds a list of notes using live data and contains function
+// to update the notes from firebase.
 class NotesViewModel: ViewModel() {
 
     // Notes list live data to post updates to observers
     private val _notesList: MutableLiveData<ArrayList<Note>> = MutableLiveData(arrayListOf())
-    // Getter to only expose unmutable live data object to view
+    // Only expose unmutable live data object to view
     val notesList: LiveData<ArrayList<Note>> get() = _notesList
 
-    // Load new notes into live data ArrayList  from firebase using repository if successful
-    // post new notes list to live data to update view
+    // Load new notes into live data ArrayList from firebase using repository
+    // if successful, post new notes list to live data to update view
     fun loadNotes(): Task<QuerySnapshot> {
         // Loading notes
         return NoteRepository.loadNotes()

@@ -9,7 +9,7 @@ import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.UploadTask
 import com.google.firebase.storage.ktx.storage
 
-// Repository object giving access to profile related data sources, i.e. cloud storage and firestore
+// Profile Repository object - Provides access to profile related data sources including cloud storage and firestore
 object ProfileRepository {
     private val firestore = Firebase.firestore
     private val storageRef = Firebase.storage.reference
@@ -44,7 +44,8 @@ object ProfileRepository {
         return AuthRepository.getFirebaseUser()!!.updateProfile(updateProfile)
     }
 
-    // Upload a profile picture from given URI to firebase cloud storage then return UploadTask object for handling
+    // Upload a profile picture from given URI to firebase cloud storage.
+    // Return UploadTask object for handling
     fun uploadProfilePicture(uri: Uri): UploadTask{
         val profileImageRef = storageRef.child(getUserId())
         return profileImageRef.putFile(uri)

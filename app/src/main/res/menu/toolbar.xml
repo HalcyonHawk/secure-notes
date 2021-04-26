@@ -4,12 +4,12 @@
     <item
         android:id="@+id/new_note"
         android:icon="@drawable/ic_add_24px"
-        android:title="Add Note"
+        android:title="@string/add_note"
         app:showAsAction="always"/>
 
     <item
         android:id="@+id/profile"
         android:icon="@drawable/ic_account_circle_white_24dp"
-        android:title="Profile"
+        android:title="@string/profile"
         app:showAsAction="always"/>
 </menu>

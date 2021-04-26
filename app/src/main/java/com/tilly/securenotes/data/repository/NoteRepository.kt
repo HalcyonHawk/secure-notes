@@ -9,7 +9,7 @@ import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.tilly.securenotes.data.Note
 
-// Repository object giving access to note related data sources
+// Note Repository object - Provides access to note related data sources
 object NoteRepository {
     private val firestore = Firebase.firestore
     private val auth = Firebase.auth
@@ -29,7 +29,7 @@ object NoteRepository {
                 .get()
     }
 
-    // Submit note to firebase and update current note id returns id for new note
+    // Submit note to firebase. Returns note_id for newly created note
     fun createNoteOnFirebase(newNote: Note): Task<DocumentReference> {
         val noteHashMap = hashMapOf("user_id" to getUserId(),
             "title" to newNote.title,

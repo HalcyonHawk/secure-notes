@@ -2,7 +2,6 @@ package com.tilly.securenotes.ui.profile
 
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
@@ -19,19 +18,19 @@ import com.squareup.picasso.Picasso
 import com.tilly.securenotes.R
 import com.tilly.securenotes.databinding.ActivityProfileBinding
 import com.tilly.securenotes.utilities.InputFocusUtilities
-import com.tilly.securenotes.utilities.NotesUtility
-import com.tilly.securenotes.utilities.NotesUtility.observeOnce
+import com.tilly.securenotes.utilities.NotesUtilities
+import com.tilly.securenotes.utilities.NotesUtilities.observeOnce
 
-// Profile activity allowing user to change account name, email, password and profile picture
+// Profile screen - Allows user to view and change account details. This includes things such as
+// change account name, email, password and profile picture
 class ProfileActivity : AppCompatActivity(), BottomSheetImagePicker.OnImagesSelectedListener {
     lateinit var binding: ActivityProfileBinding
     lateinit var viewModel: ProfileViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // Creating activity layout using binding class
+        // Create activity layout using binding class
         binding = ActivityProfileBinding.inflate(layoutInflater)
-        // Setting activity view to root of
         setContentView(binding.root)
         // Set custom toolbar view as action bar
         setSupportActionBar(binding.topAppBar)
@@ -39,10 +38,10 @@ class ProfileActivity : AppCompatActivity(), BottomSheetImagePicker.OnImagesSele
         supportActionBar?.setDisplayShowHomeEnabled(true)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        // Getting viewmodel for this activity
+        // Get viewmodel for this activity
         viewModel = ViewModelProvider(this).get(ProfileViewModel::class.java)
 
-        // Set clicking profile image to open image picker from image picker library
+        // Pressing profile image opens image picker from image picker library
         binding.profileImage.setOnClickListener {
             BottomSheetImagePicker.Builder(getString(R.string.file_provider))
                 .cameraButton(ButtonType.Tile)
@@ -54,11 +53,14 @@ class ProfileActivity : AppCompatActivity(), BottomSheetImagePicker.OnImagesSele
                 .show(supportFragmentManager)
         }
 
-        // When profile picture URI is changed, load new profile picture into ImageView if not null, else set to default picture
+        // When profile picture URI is changed
         viewModel.profilePicUri.observe(this, Observer { uri ->
+            // If profile picture URI is not null (has been changed)
             if (uri != null) {
+                // Load new profile picture into ImageView
                 Picasso.get().load(uri).into(binding.profileImage)
             } else {
+                // Set to default picture
                 binding.profileImage.setImageDrawable(ResourcesCompat.getDrawable(resources, R.drawable.ic_account_box_black_24dp, null))
             }
         })
@@ -72,10 +74,11 @@ class ProfileActivity : AppCompatActivity(), BottomSheetImagePicker.OnImagesSele
 
         // Click listener for submit new password button
         binding.submitPass.setOnClickListener {
-            // If new passwords match and new password is longer than 6 characters then change pass in database and show success message, otherwise show an error
+            // If new passwords match and new password is longer than 6 characters
             if (binding.newPassword.text.toString() == binding.confirmNewPassword.text.toString()) {
+                //Update password in database
                 viewModel.changePassword(binding.newPassword.text.toString())
-                        // Handle result of changing password by showing success message or error
+                    // Handle result of changing password by showing success message or error
                     .addOnCompleteListener { task ->
                         if (task.isSuccessful) {
                             Toast.makeText(this, "Password changed successfully", Toast.LENGTH_SHORT).show()
@@ -84,12 +87,14 @@ class ProfileActivity : AppCompatActivity(), BottomSheetImagePicker.OnImagesSele
                         }
 
                     }
+            // Password must be longer than 6 characters
             } else if (binding.newPassword.text.length < 6) {
                 Toast.makeText(
                     this,
                     "Password must be at least 6 characters long",
                     Toast.LENGTH_SHORT
                 ).show()
+            // New password and confirm new password input must match
             } else {
                 Toast.makeText(this, "Passwords do not match", Toast.LENGTH_SHORT).show()
             }
@@ -105,7 +110,7 @@ class ProfileActivity : AppCompatActivity(), BottomSheetImagePicker.OnImagesSele
 
     // Close all activities and return to LoginActivity
     private fun goBackToLogin(){
-        startActivity(NotesUtility.createGoToLoginIntent(this.baseContext))
+        startActivity(NotesUtilities.createGoToLoginIntent(this.baseContext))
     }
 
     // When images have been selected using image picker, update profile picture in firebase auth
@@ -117,29 +122,29 @@ class ProfileActivity : AppCompatActivity(), BottomSheetImagePicker.OnImagesSele
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.profile_menu, menu)
 
-        // Getting toolbar menu items from item IDs
+        // Get toolbar menu items from item IDs
         val submitItem = menu?.findItem(R.id.submit_profile)
         val deleteAccountItem = menu?.findItem(R.id.delete_account)
         val logoutItem = menu?.findItem(R.id.logout)
 
-        // Listener for showing/hiding menu items depending on if a text box is focused or not
+        // Listener for show/hide menu items depending on if a text box is focused or not
         val editTextFocusListener = InputFocusUtilities.getUpdateMenuIfEditingListener(
             submitItem,
             deleteAccountItem,
             logoutItem)
 
-        // Changing toolbar button visibility if focused
+        // Change toolbar button visibility if focused
         binding.username.onFocusChangeListener = editTextFocusListener
         binding.email.onFocusChangeListener = editTextFocusListener
 
         return super.onCreateOptionsMenu(menu)
     }
 
+    // Handle actions for each toolbar menu item
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        // Handling actions for each toolbar menu item
         when (item.itemId) {
             R.id.submit_profile -> {
-                // Submit button commits changes to user to firebase auth
+                // Submit button - submits changes to user to firebase auth
                 viewModel.commitChangedUser(
                     binding.username.text.toString(),
                     binding.email.text.toString()
@@ -159,7 +164,7 @@ class ProfileActivity : AppCompatActivity(), BottomSheetImagePicker.OnImagesSele
                 showDeleteUserDialog()
             }
             R.id.logout -> {
-                // Logout user from pp
+                // Logout user
                 viewModel.logout()
             }
             android.R.id.home -> {
@@ -170,15 +175,16 @@ class ProfileActivity : AppCompatActivity(), BottomSheetImagePicker.OnImagesSele
         return super.onOptionsItemSelected(item)
     }
 
-    // Creating confirmation dialog allowing the user to delete their account
+    // Display delete account confirmation dialog
     private fun showDeleteUserDialog() {
-        // setup the alert builder
+        // Setup the alert builder
         val builder: AlertDialog.Builder = AlertDialog.Builder(this)
         builder.setTitle("Delete Account")
         builder.setMessage("Would you like to delete your account?")
 
         // Listener for positive and negative action buttons.
-        // Yes button deletes account from firebase and shows message on success/failure. No button closes dialog.
+        // Yes button deletes account from firebase and shows message on success/failure.
+        // No button closes dialog.
         builder.setPositiveButton("Yes") { dialog, which ->
             viewModel.deleteUser()
                 .addOnSuccessListener {

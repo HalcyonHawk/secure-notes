@@ -12,11 +12,11 @@ import com.google.firebase.auth.UserProfileChangeRequest
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 
-// AuthRepository object providing access to authentication related data sources i.e Firebase Authentication
+// Auth Repository object - Provides access to authentication related data sources including Firebase Authentication
 object AuthRepository {
     private var auth: FirebaseAuth = Firebase.auth
 
-    // Getter for to access FirebaseAuth object
+    // Get FirebaseAuth object
     fun getFirebaseAuth(): FirebaseAuth{
         return auth
     }
@@ -40,7 +40,7 @@ object AuthRepository {
         auth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener{ result ->
             if (result.isSuccessful){
-                // If creating user on firebase is successful then set their display name too
+                // If creating user on firebase is successful then set the users display name
                 val displayNameUpdateReq = UserProfileChangeRequest.Builder()
                     .setDisplayName(displayName)
                     .build()
@@ -60,12 +60,12 @@ object AuthRepository {
         return resultLiveData
     }
 
-    // Function to sign out from firebase
+    // Sign out from firebase
     fun signOut(){
         auth.signOut()
     }
 
-    // Function to check if the user is logged in without exposing private firebase authentication object
+    // Check if user is logged in without exposing private firebase authentication object
     fun checkIfLoggedIn(): Boolean{
         return auth.currentUser != null
     }

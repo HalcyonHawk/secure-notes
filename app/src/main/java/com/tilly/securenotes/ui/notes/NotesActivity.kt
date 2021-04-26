@@ -14,9 +14,9 @@ import com.tilly.securenotes.databinding.ActivityNotesBinding
 import com.tilly.securenotes.ui.editor.EditorActivity
 import com.tilly.securenotes.ui.profile.ProfileActivity
 
-// Activity showing a list of notes and allowing user to edit and manage their notes
+// Notes screen - Display list of notes with buttons to manage the notes.
 class NotesActivity : AppCompatActivity() {
-    // Creating later initialised binding variable for this activity
+    // Create later initialised binding variable for this activity
     private lateinit var binding: ActivityNotesBinding
 
     // Adapter to fill custom notes list view
@@ -24,17 +24,17 @@ class NotesActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // Creating and setting view for activity from binding class
+        // Create and set view for activity from binding class
         binding = ActivityNotesBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         val viewModel: NotesViewModel by viewModels()
-        // Creating and setting notes adapter to fill notes list
+        // Create and set notes adapter to fill notes list
         notesAdapter = NotesAdapter(arrayListOf())
         binding.notesList.adapter = notesAdapter
         binding.notesList.layoutManager = LinearLayoutManager(this)
 
-        // Setting on click listeners for menu items
+        // Set on click listeners for menu items
         binding.topAppBar.setOnMenuItemClickListener { menuItem ->
             when(menuItem.itemId){
                 R.id.new_note -> {
@@ -52,23 +52,25 @@ class NotesActivity : AppCompatActivity() {
             }
         }
 
-        // Listening for changes in search box text to automatically filter displayed notes items
+        // Listen for changes in search box text to automatically filter displayed notes items
         binding.searchBox.doOnTextChanged { text, start, before, count ->
+            // If search box is empty
             if (text.isNullOrEmpty()){
-                // If search box is empty then reset filter and display all notes
+                // Reset filter and display all notes
                 notesAdapter.resetNotes()
             } else {
+                // Filter notes
                 notesAdapter.filterNotes(text.toString())
             }
         }
 
-        // Setting listener for button to alphabetically sort displayed notes
+        // Set listener for button to alphabetically sort displayed notes
         binding.sortButton.setOnClickListener {
             notesAdapter.sortNotesAlphabetically()
         }
 
 
-        // Observing for changes to notes list and updating adapter for text box auto complete
+        // Observing for changes to notes list and update adapter for text box auto complete
         viewModel.notesList.observe(this, Observer {notes ->
             // Set adapter for autocomplete search box with newly loaded notes
             val searchAdapter = ArrayAdapter<String>(this, android.R.layout.simple_dropdown_item_1line,
@@ -78,15 +80,15 @@ class NotesActivity : AppCompatActivity() {
             notesAdapter.updateFullNotesList(notes)
         })
 
-        // Loading notes when activity is created
+        // Load notes when activity is created
         refreshNotesList()
     }
 
-    // Function to refresh notes list from firebase
+    // Refresh notes list from firebase
     private fun refreshNotesList(){
-        // Getting view model for activity
+        // Get view model for activity
         val viewModel: NotesViewModel by viewModels()
-        // Loading notes and showing message on success or failure
+        // Load notes and display message on success or failure
         viewModel.loadNotes()
             .addOnSuccessListener {
                 Toast.makeText(this, "Notes loaded", Toast.LENGTH_SHORT).show()
@@ -100,7 +102,7 @@ class NotesActivity : AppCompatActivity() {
     // Refresh notes list when returning to app from another app or activity
     override fun onResume() {
         super.onResume()
-        // Getting view model for this activity
+        // Get view model for this activity
         val viewModel: NotesViewModel by viewModels()
         // Clear search box after returning to notes activity and load notes
         binding.searchBox.text.clear()

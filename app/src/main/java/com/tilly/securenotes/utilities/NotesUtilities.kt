@@ -13,21 +13,21 @@ import java.util.*
 
 
 // Utility class with functions for handling notes objects
-object NotesUtility {
-    // Creating instance of Gson to convert objects to JSON string
+object NotesUtilities {
+    // Create instance of Gson to convert objects to JSON string
     private val gson = Gson()
 
-    // Converting note to string for passing to edit activity
+    // Converting note object to string for passing to edit activity
     fun noteToString(note: Note): String{
         return gson.toJson(note)
     }
 
-    // Convert note in json form into note object
+    // Convert note in json into note object
     fun noteFromString(json: String): Note {
         return gson.fromJson(json, Note::class.java)
     }
 
-    // Format date function variation  taking note object instead of Date
+    // Format date function variation taking note object instead of Date
     fun formatTimeString(note: Note, locale: Locale, timeZone: TimeZone): String {
         return formatTimeString(
             note.lastEdited,
@@ -36,7 +36,7 @@ object NotesUtility {
         )
     }
 
-    // Format date as hour:minute day month year and format with given locale
+    // Format date as hour:minute am/pm day month year and format with given locale
     fun formatTimeString(date: Date, locale: Locale, timeZone: TimeZone): String {
         val formatter = SimpleDateFormat("h:mm a dd MMMM yyyy", locale)
         formatter.timeZone = timeZone

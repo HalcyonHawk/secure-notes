@@ -21,4 +21,27 @@
     <string name="file_provider" translatable="false">com.tilly.securenotes.fileprovider</string>
     <string name="select_new_image">Select your new profile picture</string>
     <string name="favorite_note_button">Favorite note button</string>
+    <string name="sort_button">Sort button</string>
+    <string name="search_for_note">Search for note</string>
+    <string name="profile">Profile</string>
+    <string name="add_note">Add Note</string>
+    <string name="delete_account">Delete Account</string>
+    <string name="submit_profile_changes">Submit Profile Changes</string>
+    <string name="logout">Logout</string>
+    <string name="submit">Submit</string>
+    <string name="delete_note">Delete Note</string>
+    <string name="share">Share</string>
+    <string name="favorite_note">Favorite Note</string>
+    <string name="delete_note_button">Delete note button</string>
+    <string name="share_note_button">Share note button</string>
+    <string name="note_favorite_state_icon">Note favorite state icon</string>
+    <string name="reset_password">Reset Password</string>
+    <string name="name">Name</string>
+    <string name="email">Email</string>
+    <string name="new_password">New Password</string>
+    <string name="confirm_new_password">Confirm New Password</string>
+    <string name="forgot_password">Forgot Password</string>
+    <string name="enter_title">Enter title</string>
+    <string name="date">Date</string>
+    <string name="type_here">Type here.</string>
 </resources>

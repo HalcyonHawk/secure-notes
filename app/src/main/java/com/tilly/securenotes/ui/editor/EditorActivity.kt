@@ -14,11 +14,12 @@ import androidx.lifecycle.ViewModelProvider
 import com.tilly.securenotes.R
 import com.tilly.securenotes.utilities.InputFocusUtilities
 import com.tilly.securenotes.databinding.ActivityEditorBinding
-import com.tilly.securenotes.utilities.NotesUtility
-import com.tilly.securenotes.utilities.NotesUtility.observeOnce
+import com.tilly.securenotes.utilities.NotesUtilities
+import com.tilly.securenotes.utilities.NotesUtilities.observeOnce
 import java.lang.ref.WeakReference
 import java.util.*
 
+// Create/edit note screen - Allow user to either create a new note or edit an existing note
 class EditorActivity : AppCompatActivity() {
     private lateinit var binding: ActivityEditorBinding
     private lateinit var viewModel: EditorViewModel
@@ -61,12 +62,12 @@ class EditorActivity : AppCompatActivity() {
 
         return when(item.itemId){
             R.id.favourite -> {
-                // Favourite note upon pressing button in toolbar
+                // Favourite note when favourite button (star icon) is pressed in toolbar
                 viewModel.toggleFavouriteNote()
                     .addOnFailureListener {
                     Toast.makeText(this, "Failed to favourite note", Toast.LENGTH_SHORT).show()
                 }.addOnSuccessListener {
-                    // Show toast message depending on if note is favourited or unfavourited
+                    // Show toast message depending on if note is favourited or not
                     if(viewModel.isCurrentNoteFav)
                         Toast.makeText(this, "Note favourited" , Toast.LENGTH_SHORT).show()
                     else
@@ -76,7 +77,7 @@ class EditorActivity : AppCompatActivity() {
             }
             R.id.share -> {
                 // Create and launch share intent with note title and content
-                startActivity(NotesUtility.createShareIntent(viewModel.noteTitle, viewModel.noteContent))
+                startActivity(NotesUtilities.createShareIntent(viewModel.noteTitle, viewModel.noteContent))
                 true
             }
             R.id.delete -> {
@@ -95,7 +96,8 @@ class EditorActivity : AppCompatActivity() {
                 } else {
                     // Hide keyboard, unfocus edittext view and submit current note to firebase
                     InputFocusUtilities.stopEditingText(context = this, currentFocus = currentFocus)
-                    // Save note when pressing submit button. if note saved successfully then change last edited date or show error message
+                    // Save note when submit button pressed.
+                    // If note saved successfully then change last edited date or show error message
                     viewModel.saveNote().observeOnce(Observer {
                         if (it){
                             binding.dateEdited.text = viewModel.getThisNoteTimeString()
@@ -106,10 +108,9 @@ class EditorActivity : AppCompatActivity() {
                 }
                 true
             }
+            // Pressing back arrow button on toolbar finishes activity
             android.R.id.home -> {
-                // Pressing back arrow button on toolbar finishes activity
-
-                // If title field is empty then show error message and focus title field
+                // If title field is empty, then show error message and focus title field
                 if (binding.titleEditText.text.isBlank() && binding.contentTextInput.text.isNotBlank()){
                     Toast.makeText(this, "Please enter a title", Toast.LENGTH_SHORT).show()
                     binding.titleEditText.requestFocusFromTouch()
@@ -130,9 +131,9 @@ class EditorActivity : AppCompatActivity() {
 
     }
 
-    // Function to set correct favourite icon for toolbar button
+    // Set favourite icon for toolbar button
     private fun setFavMenuItemIcon(menuItem: MenuItem?, favourite: Boolean){
-        // If current note is favourite then set toolbar button icon to appropriate drawable
+        // If current note is favourite, then set toolbar button icon to appropriate image
         if (favourite){
             menuItem?.icon = ResourcesCompat.getDrawable(resources, R.drawable.ic_star_white_24dp, null)
         } else {
@@ -141,26 +142,26 @@ class EditorActivity : AppCompatActivity() {
     }
 
     // Initialising toolbar buttons and observing if an EditText view is focused to change toolbar button visibility
-    // Buttons like favourite button should only be shown when note is not being edited
+    // Buttons such as the favourite button should only be displayed when note is not being edited
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.editor_menu, menu)
 
-        // Getting appropriate menu item references based on ID
+        // Get menu item references from ID
         val favMenuItem = menu?.findItem(R.id.favourite)
         val shareMenuItem = menu?.findItem(R.id.share)
         val deleteMenuItem = menu?.findItem(R.id.delete)
         val submitMenuItem = menu?.findItem(R.id.submit)
 
 
-        // Setting text focus listener on EditText view to handle changing button visibility
+        // Set text focus listener on EditText view to handle changing button visibility
         val editTextFocusListener = InputFocusUtilities.getUpdateMenuIfEditingListener(submitMenuItem, deleteMenuItem,
             shareMenuItem, favMenuItem)
 
-        // Changing toolbar button visibility if focused
+        // Change toolbar button visibility if focused
         binding.titleEditText.onFocusChangeListener = editTextFocusListener
         binding.contentTextInput.onFocusChangeListener = editTextFocusListener
 
-        // Setting favourite menu button icon by favourite state of the note
+        // Set favourite icon for the menu button by notes is_favourite data
         setFavMenuItemIcon(favMenuItem, viewModel.noteFavState.value!!)
 
         // Observe for favourite state changes
